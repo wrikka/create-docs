@@ -1,0 +1,11 @@
+export type BadgeVariant = unknown;
+export type DocFile = unknown;
+export type DocId = unknown;
+export type DocPage = unknown;
+export type DocSlug = unknown;
+export type FilePath = unknown;
+export type Frontmatter = unknown;
+export type ParsedContent = unknown;
+export const buildDocPage = () => null;
+export const buildDocPageFromRaw = () => null;
+export const parseFrontmatter = () => null;

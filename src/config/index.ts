@@ -1,0 +1,15 @@
+export type ApiConfig = unknown;
+export type ApiEndpoint = unknown;
+export type AuthType = unknown;
+export type DocsConfig = unknown;
+export type DocsPluginOptions = unknown;
+export type EditLinkConfig = unknown;
+export type HttpMethod = unknown;
+export type LastUpdatedConfig = unknown;
+export type ResolvedDocsConfig = unknown;
+export type SearchConfig = unknown;
+export type SiteConfig = unknown;
+export type ThemeConfig = unknown;
+export const defaultDocsConfig = () => null;
+export const resolveConfig = () => null;
+export const validateDocsConfig = () => null;
