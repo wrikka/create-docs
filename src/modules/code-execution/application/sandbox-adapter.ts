@@ -1,41 +1,44 @@
 /**
  * Sandbox adapter implementation.
- * Provides isolated code execution environment.
+ * Provides a safe placeholder for isolated code execution.
  */
 
+import { configError, pluginError } from "@create-docs/shared/errors";
 import type { ExecutionPort } from "../ports/execution-port";
-import type { ExecutionResult } from "../types/execution";
+import type { CodeExecutionConfig } from "../types/execution";
+
+const SANDBOX_MISSING_ERROR =
+	"Sandbox dependency is not installed. Isolated code execution requires a sandbox package such as vm2 or isolated-vm.";
 
 export const createSandboxAdapter = (): ExecutionPort => ({
 	execute: async (code: string, _config?: unknown) => {
-		try {
-			console.log(
-				"Sandbox execution not yet implemented - requires sandbox dependency",
-			);
-			console.log(`Code length: ${code.length} characters`);
-			return {
-				success: false,
-				output: "",
-				error: "Sandbox not implemented",
-				exitCode: 1,
-			} as ExecutionResult;
-		} catch (error) {
-			return {
-				success: false,
-				output: "",
-				error: error instanceof Error ? error.message : "Unknown error",
-				exitCode: 1,
-			} as ExecutionResult;
+		const cfg = _config as Partial<CodeExecutionConfig> | undefined;
+
+		if (cfg?.enabled === false) {
+			throw configError("Code execution is disabled", {
+				context: { enabled: false },
+			});
 		}
+
+		if (!cfg?.sandbox) {
+			throw configError("Code execution config requires sandbox: true", {
+				context: { config: cfg },
+				hint: "Enable sandbox in the execution config, or install a sandbox package.",
+			});
+		}
+
+		throw pluginError(SANDBOX_MISSING_ERROR, {
+			context: { codeLength: code.length },
+			hint: "Install an isolated execution sandbox and configure it before running code.",
+		});
 	},
 
 	validate: async (_code: string) => {
-		try {
-			console.log("Code validation not yet implemented");
-			return true;
-		} catch (error) {
-			console.error("Failed to validate code:", error);
-			return false;
-		}
+		throw pluginError(
+			"Code validation cannot be performed safely without an isolated sandbox environment.",
+			{
+				hint: "Install a sandbox package and configure it before validating code.",
+			},
+		);
 	},
 });

@@ -1,38 +1,55 @@
 /**
  * Giscus adapter implementation.
- * Provides Giscus comment integration.
+ * Provides a safe server-side placeholder for Giscus comment integration.
  */
 
+import { configError, pluginError } from "@create-docs/shared/errors";
 import type { CommentPort } from "../ports/comment-port";
-import type { Comment } from "../types/comments";
+
+type GiscusConfig = {
+	readonly category?: string;
+	readonly categoryId?: string;
+};
 
 export const createGiscusAdapter = (
 	repo: string,
 	repoId: string,
-): CommentPort => ({
-	load: async (pageId: string, _config?: unknown) => {
-		try {
-			console.log(
-				`Giscus loading not yet implemented - requires giscus dependency`,
-			);
-			console.log(`Repo: ${repo}`);
-			console.log(`Repo ID: ${repoId}`);
-			console.log(`Page ID: ${pageId}`);
-			return [] as Comment[];
-		} catch (error) {
-			console.error("Failed to load comments:", error);
-			return [];
-		}
-	},
+): CommentPort => {
+	if (!repo.trim() || !repoId.trim()) {
+		throw configError("Giscus repo and repoId are required", {
+			context: { repo, repoId },
+			hint: "Pass a GitHub repo identifier and giscus repoId.",
+		});
+	}
 
-	submit: async (_comment: unknown, _config?: unknown) => {
-		try {
-			console.log(
-				`Giscus submission not yet implemented - requires giscus dependency`,
+	return {
+		load: async (pageId: string, config?: unknown) => {
+			const cfg = config as GiscusConfig | undefined;
+
+			if (!cfg?.category && !cfg?.categoryId) {
+				throw configError("Giscus category or categoryId is required", {
+					context: { repo, repoId, pageId },
+					hint: "Set category and categoryId in the comment config.",
+				});
+			}
+
+			throw pluginError(
+				"Giscus comments require the @giscus/react client component and a GitHub Discussions repository.",
+				{
+					context: { repo, repoId, pageId },
+					hint: "Install and configure @giscus/react, or switch to a different comment provider.",
+				},
 			);
-			console.log(`Repo: ${repo}`);
-		} catch (error) {
-			console.error("Failed to submit comment:", error);
-		}
-	},
-});
+		},
+
+		submit: async (_comment: unknown, _config?: unknown) => {
+			throw pluginError(
+				"Giscus submission requires the @giscus/react client component.",
+				{
+					context: { repo, repoId },
+					hint: "Install and configure @giscus/react, or switch to a different comment provider.",
+				},
+			);
+		},
+	};
+};

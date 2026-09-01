@@ -108,6 +108,8 @@ export const configError = (
 		path?: string;
 		suggestions?: readonly string[];
 		context?: Record<string, unknown>;
+		hint?: string;
+		cause?: unknown;
 	},
 ): AppError => {
 	const ctx = options?.context ?? {};
@@ -116,9 +118,12 @@ export const configError = (
 		context: ctx,
 		path: options?.path,
 		suggestions: options?.suggestions,
-		hint: options?.suggestions?.length
-			? `Allowed: ${options.suggestions.join(", ")}.`
-			: "See https://create-docs.dev/docs/configuration for the full schema.",
+		hint:
+			options?.hint ??
+			(options?.suggestions?.length
+				? `Allowed: ${options.suggestions.join(", ")}.`
+				: "See https://create-docs.dev/docs/configuration for the full schema."),
+		cause: options?.cause,
 	});
 };
 
@@ -134,6 +139,7 @@ export const pluginError = (
 		path?: string;
 		hint?: string;
 		context?: Record<string, unknown>;
+		cause?: unknown;
 	},
 ): AppError => {
 	const ctx = options?.context ?? {};
@@ -142,6 +148,7 @@ export const pluginError = (
 		context: ctx,
 		path: options?.path,
 		hint: options?.hint,
+		cause: options?.cause,
 	});
 };
 

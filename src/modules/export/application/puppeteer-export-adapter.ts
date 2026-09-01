@@ -7,12 +7,18 @@ import { processExportResult } from "../domain/operations/export-operations";
 import type { ExportPort } from "../ports/export-port";
 import type { ExportConfig } from "../types/export";
 
+const PUPPETEER_MISSING_ERROR =
+	"Puppeteer is not installed. PDF/EPUB export requires the puppeteer package and a Chromium binary.";
+
 export const createPuppeteerExportAdapter = (): ExportPort => ({
 	exportToPdf: async (_content: string, config?: unknown) => {
 		try {
-			if (typeof window === "undefined") {
-				console.error("PDF export requires browser environment");
-				return processExportResult(false, "", "Browser environment required");
+			if (typeof window !== "undefined") {
+				return processExportResult(
+					false,
+					"",
+					"PDF export is only supported in a Node.js build environment with Puppeteer.",
+				);
 			}
 
 			const exportConfig = config as ExportConfig;
@@ -20,10 +26,7 @@ export const createPuppeteerExportAdapter = (): ExportPort => ({
 				return processExportResult(false, "", "Output directory not specified");
 			}
 
-			console.log(
-				"PDF export not yet implemented - requires Puppeteer dependency",
-			);
-			return processExportResult(false, "", "Puppeteer not installed");
+			return processExportResult(false, "", PUPPETEER_MISSING_ERROR);
 		} catch (error) {
 			return processExportResult(
 				false,
@@ -35,9 +38,12 @@ export const createPuppeteerExportAdapter = (): ExportPort => ({
 
 	exportToEpub: async (_content: string, config?: unknown) => {
 		try {
-			if (typeof window === "undefined") {
-				console.error("EPUB export requires browser environment");
-				return processExportResult(false, "", "Browser environment required");
+			if (typeof window !== "undefined") {
+				return processExportResult(
+					false,
+					"",
+					"EPUB export is only supported in a Node.js build environment with Puppeteer.",
+				);
 			}
 
 			const exportConfig = config as ExportConfig;
@@ -45,10 +51,7 @@ export const createPuppeteerExportAdapter = (): ExportPort => ({
 				return processExportResult(false, "", "Output directory not specified");
 			}
 
-			console.log(
-				"EPUB export not yet implemented - requires Puppeteer dependency",
-			);
-			return processExportResult(false, "", "Puppeteer not installed");
+			return processExportResult(false, "", PUPPETEER_MISSING_ERROR);
 		} catch (error) {
 			return processExportResult(
 				false,

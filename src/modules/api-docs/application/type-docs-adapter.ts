@@ -1,32 +1,34 @@
 /**
  * TypeDoc adapter implementation.
- * Provides API docs generation from TypeScript using TypeDoc.
+ * Provides a safe placeholder for API docs generation from TypeScript.
  */
 
+import { configError, ioError, pluginError } from "@create-docs/shared/errors";
 import type { ApiDocsPort } from "../ports/api-docs-port";
-import type { ApiEndpoint } from "../types/api-docs";
+
+const TYPEDOC_MISSING_ERROR =
+	"TypeDoc is not installed. Generating API docs from TypeScript requires the typedoc package.";
 
 export const createTypeDocAdapter = (): ApiDocsPort => ({
 	extractEndpoints: async (sourcePath: string, _config?: unknown) => {
-		try {
-			console.log(
-				"TypeDoc integration not yet implemented - requires typedoc dependency",
-			);
-			console.log(`Source path: ${sourcePath}`);
-			return [] as ApiEndpoint[];
-		} catch (error) {
-			console.error("Failed to extract endpoints:", error);
-			return [];
+		if (!sourcePath.trim()) {
+			throw configError("TypeDoc sourcePath is required", {
+				context: { sourcePath },
+			});
 		}
+
+		throw ioError(sourcePath, TYPEDOC_MISSING_ERROR);
 	},
 
-	generateDocs: async (endpoints: readonly unknown[], outputPath: string) => {
-		try {
-			console.log("TypeDoc documentation generation not yet implemented");
-			console.log(`Output path: ${outputPath}`);
-			console.log(`Endpoints count: ${endpoints.length}`);
-		} catch (error) {
-			console.error("Failed to generate docs:", error);
+	generateDocs: async (_endpoints: readonly unknown[], outputPath: string) => {
+		if (!outputPath.trim()) {
+			throw configError("TypeDoc outputPath is required", {
+				context: { outputPath },
+			});
 		}
+
+		throw pluginError(TYPEDOC_MISSING_ERROR, {
+			context: { outputPath },
+		});
 	},
 });
