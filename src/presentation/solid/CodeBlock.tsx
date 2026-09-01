@@ -29,8 +29,7 @@ export const CodeBlock = (props: CodeBlockProps) => {
 	};
 
 	onMount(() => {
-		// Basic syntax highlighting - in production, integrate with a proper highlighter
-		// This is a placeholder that can be enhanced with Shiki or similar
+		// Lightweight syntax highlighter. For full language support add Shiki.
 		let highlighted = props.code
 			.replace(/&/g, "&amp;")
 			.replace(/</g, "&lt;")
@@ -51,6 +50,15 @@ export const CodeBlock = (props: CodeBlockProps) => {
 			highlighted = highlighted.replace(
 				/\b(const|let|var|function|return|if|else|for|while|import|export|from|class|extends)\b/g,
 				'<span class="keyword">$1</span>',
+			);
+		} else if (props.language === "json") {
+			highlighted = highlighted
+				.replace(/"([^"\\]*)"/g, '<span class="string">"$1"</span>')
+				.replace(/\b(true|false|null)\b/g, '<span class="keyword">$1</span>');
+		} else if (props.language === "bash" || props.language === "shell") {
+			highlighted = highlighted.replace(
+				/(^|\s)(bun|npm|pnpm|yarn|node|cd|ls|cat|mkdir|rm|cp|mv|git)(?=\s|$)/g,
+				'$1<span class="keyword">$2</span>',
 			);
 		}
 

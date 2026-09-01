@@ -5,69 +5,121 @@
  * This replaces comark with Velite for framework-agnostic content processing.
  */
 
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import type { AppError } from "@create-docs/shared/errors";
+import { ioError } from "@create-docs/shared/errors";
 import type { Result } from "@create-docs/shared/types/result";
-import type { FilePath, ParsedContent } from "../types";
+import type { FilePath, Frontmatter, ParsedContent } from "../types";
 import type { DirectoryEntry } from "./index";
+
+const parseFrontmatter = (
+	raw: string,
+): { frontmatter: Frontmatter; content: string } => {
+	const match = raw.match(/^---\s*\n([\s\S]*?)\n---\s*\n?([\s\S]*)$/);
+	if (!match) {
+		return { frontmatter: {}, content: raw };
+	}
+
+	const lines = match[1].split("\n");
+	const frontmatter: Record<string, unknown> = {};
+
+	for (const line of lines) {
+		const [key, ...valueParts] = line.split(":");
+		if (key && valueParts.length > 0) {
+			const value = valueParts.join(":").trim();
+			frontmatter[key.trim()] = value;
+		}
+	}
+
+	return { frontmatter: frontmatter as Frontmatter, content: match[2] };
+};
 
 /**
  * Velite-based content parser
- * Parses markdown/MDX using Velite's built-in processors
+ * Parses markdown/MDX using YAML frontmatter and body split
  */
 export const veliteParse = (raw: string): ParsedContent => {
-	// Velite handles parsing internally, this is a placeholder
-	// In practice, Velite outputs parsed data directly to .velite/
-	// This parser is for compatibility with existing port interface
+	const { frontmatter, content } = parseFrontmatter(raw);
 	return {
-		frontmatter: {},
-		content: raw,
+		frontmatter,
+		content,
 		rawContent: raw,
 	};
 };
 
 /**
  * Velite-based directory scanner
- * Velite uses glob patterns for content discovery
+ * Scans the directory for markdown/MDX content files
  */
 export const veliteList = async (
-	_dirPath: string,
+	dirPath: string,
 ): Promise<Result<readonly DirectoryEntry[], AppError>> => {
-	// Velite handles directory scanning via glob patterns
-	// This is a placeholder for compatibility
-	return {
-		ok: true,
-		value: [],
-	};
+	try {
+		const entries = readdirSync(dirPath, { withFileTypes: true });
+		const value: DirectoryEntry[] = entries.map((entry) => ({
+			name: entry.name,
+			isDirectory: entry.isDirectory(),
+			path: join(dirPath, entry.name),
+		}));
+		return { ok: true, value };
+	} catch (error) {
+		return {
+			ok: false,
+			error: ioError(
+				dirPath,
+				error instanceof Error ? error.message : "Failed to scan directory",
+				error,
+			),
+		};
+	}
 };
 
 /**
  * Velite-based file reader
- * Velite reads files during build process
+ * Reads raw file contents from disk
  */
 export const veliteRead = async (
-	_filePath: FilePath,
+	filePath: FilePath,
 ): Promise<Result<string, AppError>> => {
-	// Velite handles file reading during build
-	// This is a placeholder for compatibility
-	return {
-		ok: true,
-		value: "",
-	};
+	try {
+		const value = readFileSync(filePath, "utf-8");
+		return { ok: true, value };
+	} catch (error) {
+		return {
+			ok: false,
+			error: ioError(
+				filePath,
+				error instanceof Error ? error.message : "Failed to read file",
+				error,
+			),
+		};
+	}
 };
 
-export const veliteExists = async (_filePath: FilePath): Promise<boolean> => {
-	// Velite handles existence checks during build
-	return false;
+export const veliteExists = async (filePath: FilePath): Promise<boolean> => {
+	return existsSync(filePath);
 };
 
 export const veliteStat = async (
-	_filePath: FilePath,
+	filePath: FilePath,
 ): Promise<Result<{ mtimeMs: number; size: number }, AppError>> => {
-	// Velite handles file stats during build
-	return {
-		ok: true,
-		value: { mtimeMs: 0, size: 0 },
-	};
+	try {
+		const stats = statSync(filePath);
+		return {
+			ok: true,
+			value: { mtimeMs: stats.mtimeMs, size: stats.size },
+		};
+	} catch (error) {
+		return {
+			ok: false,
+			error: ioError(
+				filePath,
+				error instanceof Error ? error.message : "Failed to stat file",
+				error,
+			),
+		};
+	}
 };
 
 /**
