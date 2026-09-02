@@ -28,18 +28,20 @@ export type CodeBlockEnhancementsDomainEvent =
 
 export const createCodeBlockCopiedEvent = (
 	blockId: string,
+	now: number = Date.now(),
 ): CodeBlockCopiedEvent => ({
 	type: "CODE_BLOCK_COPIED",
-	timestamp: Date.now(),
+	timestamp: now,
 	blockId,
 });
 
 export const createCodeBlockDownloadedEvent = (
 	blockId: string,
 	filename: string,
+	now: number = Date.now(),
 ): CodeBlockDownloadedEvent => ({
 	type: "CODE_BLOCK_DOWNLOADED",
-	timestamp: Date.now(),
+	timestamp: now,
 	blockId,
 	filename,
 });
@@ -47,9 +49,10 @@ export const createCodeBlockDownloadedEvent = (
 export const createLineHighlightedEvent = (
 	blockId: string,
 	lineNumber: number,
+	now: number = Date.now(),
 ): LineHighlightedEvent => ({
 	type: "LINE_HIGHLIGHTED",
-	timestamp: Date.now(),
+	timestamp: now,
 	blockId,
 	lineNumber,
 });

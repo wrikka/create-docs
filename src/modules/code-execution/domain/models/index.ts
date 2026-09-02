@@ -21,6 +21,7 @@ export const createCodeExecution = (
 		status?: CodeExecution["status"];
 		timestamp?: number;
 	},
+	now: number = Date.now(),
 ): CodeExecution => ({
 	id,
 	language,
@@ -28,5 +29,5 @@ export const createCodeExecution = (
 	output: options?.output,
 	error: options?.error,
 	status: options?.status ?? "pending",
-	timestamp: options?.timestamp ?? Date.now(),
+	timestamp: options?.timestamp ?? now,
 });

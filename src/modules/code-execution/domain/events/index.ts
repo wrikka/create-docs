@@ -28,18 +28,20 @@ export type CodeExecutionDomainEvent =
 
 export const createExecutionStartedEvent = (
 	executionId: string,
+	now: number = Date.now(),
 ): ExecutionStartedEvent => ({
 	type: "EXECUTION_STARTED",
-	timestamp: Date.now(),
+	timestamp: now,
 	executionId,
 });
 
 export const createExecutionCompletedEvent = (
 	executionId: string,
 	output: string,
+	now: number = Date.now(),
 ): ExecutionCompletedEvent => ({
 	type: "EXECUTION_COMPLETED",
-	timestamp: Date.now(),
+	timestamp: now,
 	executionId,
 	output,
 });
@@ -47,9 +49,10 @@ export const createExecutionCompletedEvent = (
 export const createExecutionFailedEvent = (
 	executionId: string,
 	error: string,
+	now: number = Date.now(),
 ): ExecutionFailedEvent => ({
 	type: "EXECUTION_FAILED",
-	timestamp: Date.now(),
+	timestamp: now,
 	executionId,
 	error,
 });

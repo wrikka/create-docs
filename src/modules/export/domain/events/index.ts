@@ -28,23 +28,28 @@ export type ExportDomainEvent =
 export const createExportStartedEvent = (
 	format: string,
 	filename: string,
+	now: number = Date.now(),
 ): ExportStartedEvent => ({
 	type: "EXPORT_STARTED",
-	timestamp: Date.now(),
+	timestamp: now,
 	format,
 	filename,
 });
 
 export const createExportCompletedEvent = (
 	filePath: string,
+	now: number = Date.now(),
 ): ExportCompletedEvent => ({
 	type: "EXPORT_COMPLETED",
-	timestamp: Date.now(),
+	timestamp: now,
 	filePath,
 });
 
-export const createExportFailedEvent = (error: string): ExportFailedEvent => ({
+export const createExportFailedEvent = (
+	error: string,
+	now: number = Date.now(),
+): ExportFailedEvent => ({
 	type: "EXPORT_FAILED",
-	timestamp: Date.now(),
+	timestamp: now,
 	error,
 });

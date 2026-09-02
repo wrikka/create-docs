@@ -18,18 +18,20 @@ export type LiveEditorDomainEvent = ContentChangedEvent | CursorMovedEvent;
 
 export const createContentChangedEvent = (
 	contentLength: number,
+	now: number = Date.now(),
 ): ContentChangedEvent => ({
 	type: "CONTENT_CHANGED",
-	timestamp: Date.now(),
+	timestamp: now,
 	contentLength,
 });
 
 export const createCursorMovedEvent = (
 	line: number,
 	column: number,
+	now: number = Date.now(),
 ): CursorMovedEvent => ({
 	type: "CURSOR_MOVED",
-	timestamp: Date.now(),
+	timestamp: now,
 	line,
 	column,
 });

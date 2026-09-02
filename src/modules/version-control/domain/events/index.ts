@@ -21,17 +21,19 @@ export type VersionControlDomainEvent =
 export const createVersionCreatedEvent = (
 	versionNumber: string,
 	author: string,
+	now: number = Date.now(),
 ): VersionCreatedEvent => ({
 	type: "VERSION_CREATED",
-	timestamp: Date.now(),
+	timestamp: now,
 	versionNumber,
 	author,
 });
 
 export const createVersionRestoredEvent = (
 	versionNumber: string,
+	now: number = Date.now(),
 ): VersionRestoredEvent => ({
 	type: "VERSION_RESTORED",
-	timestamp: Date.now(),
+	timestamp: now,
 	versionNumber,
 });

@@ -28,25 +28,28 @@ export type CommentsDomainEvent =
 export const createCommentAddedEvent = (
 	commentId: string,
 	author: string,
+	now: number = Date.now(),
 ): CommentAddedEvent => ({
 	type: "COMMENT_ADDED",
-	timestamp: Date.now(),
+	timestamp: now,
 	commentId,
 	author,
 });
 
 export const createCommentUpdatedEvent = (
 	commentId: string,
+	now: number = Date.now(),
 ): CommentUpdatedEvent => ({
 	type: "COMMENT_UPDATED",
-	timestamp: Date.now(),
+	timestamp: now,
 	commentId,
 });
 
 export const createCommentDeletedEvent = (
 	commentId: string,
+	now: number = Date.now(),
 ): CommentDeletedEvent => ({
 	type: "COMMENT_DELETED",
-	timestamp: Date.now(),
+	timestamp: now,
 	commentId,
 });

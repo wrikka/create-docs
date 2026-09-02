@@ -19,11 +19,12 @@ export const createComment = (
 		replies?: readonly Comment[];
 		timestamp?: number;
 	},
+	now: number = Date.now(),
 ): Comment => ({
 	id,
 	author,
 	content,
 	parentId: options?.parentId,
 	replies: options?.replies,
-	timestamp: options?.timestamp ?? Date.now(),
+	timestamp: options?.timestamp ?? now,
 });

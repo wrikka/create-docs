@@ -27,26 +27,29 @@ export type WorkflowDomainEvent =
 
 export const createWorkflowStartedEvent = (
 	workflowId: string,
+	now: number = Date.now(),
 ): WorkflowStartedEvent => ({
 	type: "WORKFLOW_STARTED",
-	timestamp: Date.now(),
+	timestamp: now,
 	workflowId,
 });
 
 export const createWorkflowCompletedEvent = (
 	workflowId: string,
+	now: number = Date.now(),
 ): WorkflowCompletedEvent => ({
 	type: "WORKFLOW_COMPLETED",
-	timestamp: Date.now(),
+	timestamp: now,
 	workflowId,
 });
 
 export const createStepCompletedEvent = (
 	workflowId: string,
 	stepId: string,
+	now: number = Date.now(),
 ): StepCompletedEvent => ({
 	type: "STEP_COMPLETED",
-	timestamp: Date.now(),
+	timestamp: now,
 	workflowId,
 	stepId,
 });

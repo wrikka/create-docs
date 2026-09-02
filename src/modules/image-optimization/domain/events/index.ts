@@ -20,18 +20,20 @@ export type ImageOptimizationDomainEvent =
 
 export const createOptimizationStartedEvent = (
 	imagePath: string,
+	now: number = Date.now(),
 ): OptimizationStartedEvent => ({
 	type: "OPTIMIZATION_STARTED",
-	timestamp: Date.now(),
+	timestamp: now,
 	imagePath,
 });
 
 export const createOptimizationCompletedEvent = (
 	imagePath: string,
 	sizeReduction: number,
+	now: number = Date.now(),
 ): OptimizationCompletedEvent => ({
 	type: "OPTIMIZATION_COMPLETED",
-	timestamp: Date.now(),
+	timestamp: now,
 	imagePath,
 	sizeReduction,
 });

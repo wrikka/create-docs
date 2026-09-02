@@ -22,9 +22,10 @@ export type ApiDocsDomainEvent =
 export const createApiEndpointAddedEvent = (
 	path: string,
 	method: string,
+	now: number = Date.now(),
 ): ApiEndpointAddedEvent => ({
 	type: "API_ENDPOINT_ADDED",
-	timestamp: Date.now(),
+	timestamp: now,
 	path,
 	method,
 });
@@ -32,9 +33,10 @@ export const createApiEndpointAddedEvent = (
 export const createApiEndpointUpdatedEvent = (
 	path: string,
 	method: string,
+	now: number = Date.now(),
 ): ApiEndpointUpdatedEvent => ({
 	type: "API_ENDPOINT_UPDATED",
-	timestamp: Date.now(),
+	timestamp: now,
 	path,
 	method,
 });

@@ -27,8 +27,9 @@ export const validateExportConfig = (config: ExportConfig): boolean => {
 export const generateExportFilename = (
 	slug: string,
 	format: "pdf" | "epub",
+	now: number = Date.now(),
 ): string => {
-	const timestamp = new Date().toISOString().split("T")[0];
+	const timestamp = new Date(now).toISOString().split("T")[0];
 	return `${slug}-${timestamp}.${format}`;
 };
 

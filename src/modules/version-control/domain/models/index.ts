@@ -15,10 +15,11 @@ export const createVersion = (
 	author: string,
 	message: string,
 	options?: { timestamp?: number },
+	now: number = Date.now(),
 ): Version => ({
 	id,
 	number,
 	author,
 	message,
-	timestamp: options?.timestamp ?? Date.now(),
+	timestamp: options?.timestamp ?? now,
 });

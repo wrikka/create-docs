@@ -17,16 +17,18 @@ export type I18nDomainEvent = LocaleChangedEvent | TranslationLoadedEvent;
 
 export const createLocaleChangedEvent = (
 	localeCode: string,
+	now: number = Date.now(),
 ): LocaleChangedEvent => ({
 	type: "LOCALE_CHANGED",
-	timestamp: Date.now(),
+	timestamp: now,
 	localeCode,
 });
 
 export const createTranslationLoadedEvent = (
 	language: string,
+	now: number = Date.now(),
 ): TranslationLoadedEvent => ({
 	type: "TRANSLATION_LOADED",
-	timestamp: Date.now(),
+	timestamp: now,
 	language,
 });

@@ -28,18 +28,20 @@ export type ContentLintingDomainEvent =
 
 export const createLintingStartedEvent = (
 	filePath: string,
+	now: number = Date.now(),
 ): LintingStartedEvent => ({
 	type: "LINTING_STARTED",
-	timestamp: Date.now(),
+	timestamp: now,
 	filePath,
 });
 
 export const createLintingCompletedEvent = (
 	filePath: string,
 	issueCount: number,
+	now: number = Date.now(),
 ): LintingCompletedEvent => ({
 	type: "LINTING_COMPLETED",
-	timestamp: Date.now(),
+	timestamp: now,
 	filePath,
 	issueCount,
 });
@@ -47,9 +49,10 @@ export const createLintingCompletedEvent = (
 export const createIssueFoundEvent = (
 	ruleId: string,
 	message: string,
+	now: number = Date.now(),
 ): IssueFoundEvent => ({
 	type: "ISSUE_FOUND",
-	timestamp: Date.now(),
+	timestamp: now,
 	ruleId,
 	message,
 });

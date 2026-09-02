@@ -15,10 +15,11 @@ export const createGitCommit = (
 	author: string,
 	branch: string,
 	options?: { timestamp?: number },
+	now: number = Date.now(),
 ): GitCommit => ({
 	hash,
 	message,
 	author,
 	branch,
-	timestamp: options?.timestamp ?? Date.now(),
+	timestamp: options?.timestamp ?? now,
 });

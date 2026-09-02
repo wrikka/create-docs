@@ -29,9 +29,10 @@ export const createExportConfig = (
 export const createExportResult = (
 	success: boolean,
 	options?: { filePath?: string; error?: string; timestamp?: number },
+	now: number = Date.now(),
 ): ExportResult => ({
 	success,
 	filePath: options?.filePath,
 	error: options?.error,
-	timestamp: options?.timestamp ?? Date.now(),
+	timestamp: options?.timestamp ?? now,
 });

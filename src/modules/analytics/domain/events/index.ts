@@ -16,18 +16,22 @@ export interface SearchPerformedEvent {
 
 export type AnalyticsDomainEvent = PageViewedEvent | SearchPerformedEvent;
 
-export const createPageViewedEvent = (path: string): PageViewedEvent => ({
+export const createPageViewedEvent = (
+	path: string,
+	now: number = Date.now(),
+): PageViewedEvent => ({
 	type: "PAGE_VIEWED",
-	timestamp: Date.now(),
+	timestamp: now,
 	path,
 });
 
 export const createSearchPerformedEvent = (
 	query: string,
 	resultsCount: number,
+	now: number = Date.now(),
 ): SearchPerformedEvent => ({
 	type: "SEARCH_PERFORMED",
-	timestamp: Date.now(),
+	timestamp: now,
 	query,
 	resultsCount,
 });

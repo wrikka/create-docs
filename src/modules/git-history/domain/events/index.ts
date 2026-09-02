@@ -17,16 +17,18 @@ export type GitHistoryDomainEvent = HistoryLoadedEvent | CommitSelectedEvent;
 
 export const createHistoryLoadedEvent = (
 	commitCount: number,
+	now: number = Date.now(),
 ): HistoryLoadedEvent => ({
 	type: "HISTORY_LOADED",
-	timestamp: Date.now(),
+	timestamp: now,
 	commitCount,
 });
 
 export const createCommitSelectedEvent = (
 	commitHash: string,
+	now: number = Date.now(),
 ): CommitSelectedEvent => ({
 	type: "COMMIT_SELECTED",
-	timestamp: Date.now(),
+	timestamp: now,
 	commitHash,
 });

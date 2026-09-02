@@ -22,9 +22,10 @@ export type ExternalSearchDomainEvent =
 export const createSearchRequestedEvent = (
 	query: string,
 	providerId: string,
+	now: number = Date.now(),
 ): SearchRequestedEvent => ({
 	type: "SEARCH_REQUESTED",
-	timestamp: Date.now(),
+	timestamp: now,
 	query,
 	providerId,
 });
@@ -32,9 +33,10 @@ export const createSearchRequestedEvent = (
 export const createSearchCompletedEvent = (
 	query: string,
 	resultCount: number,
+	now: number = Date.now(),
 ): SearchCompletedEvent => ({
 	type: "SEARCH_COMPLETED",
-	timestamp: Date.now(),
+	timestamp: now,
 	query,
 	resultCount,
 });

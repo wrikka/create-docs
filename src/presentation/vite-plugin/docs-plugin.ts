@@ -69,7 +69,7 @@ export const docsPlugin = (cfg: DocsPluginConfig = {}): Plugin => {
 		return resolved;
 	};
 
-	const invalidateAndNotify = (): void => {
+	const invalidateAndNotify = (now2: number = Date.now()): void => {
 		if (!server) return;
 		const invalidated: string[] = [];
 		for (const id of Object.keys(lastModules)) {
@@ -87,7 +87,7 @@ export const docsPlugin = (cfg: DocsPluginConfig = {}): Plugin => {
 		// Connected clients with `import.meta.hot.accept` on these virtuals
 		// will hot-swap; others will be re-evaluated via the standard
 		// module graph invalidation without a full page reload.
-		const now = Date.now();
+		const now = now2;
 		server.ws.send({
 			type: "update",
 			updates: invalidated.map((id) => ({
