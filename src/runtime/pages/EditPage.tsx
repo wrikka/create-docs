@@ -4,6 +4,13 @@ import { DocMarkdown } from "../components/DocMarkdown";
 import { useDocs } from "../context";
 import { useCollections } from "../data";
 
+function repoInfo(url?: string) {
+	if (!url) return null;
+	const match = url.match(/github\.com[:/]([^/]+)\/([^/]+)/);
+	if (!match) return null;
+	return { owner: match[1], repo: match[2].replace(/\.git$/, "") };
+}
+
 function stringifyFrontmatter(fm: Record<string, unknown>): string {
 	const lines = ["---"];
 	for (const [k, v] of Object.entries(fm)) {
@@ -76,6 +83,41 @@ export function EditPage() {
 		}
 	};
 
+	const handleSave = async () => {
+		const repo = config.site.repoUrl ? repoInfo(config.site.repoUrl) : null;
+		if (!repo) {
+			setMessage("GitHub repo not configured");
+			return;
+		}
+		const filePath = doc()?.path;
+		if (!filePath) {
+			setMessage("Document path unknown");
+			return;
+		}
+		try {
+			const res = await fetch("/api/content/save", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({
+					...repo,
+					path: `apps/web/create-docs/${collection()}/${filePath}`,
+					content: source(),
+					message: `docs: update ${collection()}/${docId()} [via create-docs editor]`,
+					branch: config.github?.branch ?? "main",
+					owner: repo.owner,
+					repo: repo.repo,
+				}),
+			});
+			const data = (await res.json()) as { ok?: boolean; error?: string };
+			if (!res.ok) throw new Error(data.error ?? "Save failed");
+			setMessage("Saved to Git");
+		} catch (e) {
+			setMessage(e instanceof Error ? e.message : "Save failed");
+		}
+	};
+
+	const canSave = () => !!config.site.repoUrl;
+
 	return (
 		<div class="max-w-6xl mx-auto px-6 py-8">
 			<div class="flex items-center gap-3 mb-6 flex-wrap">
@@ -108,6 +150,16 @@ export function EditPage() {
 					<span class="i-mdi:download" aria-hidden="true" />
 					Download .md
 				</button>
+				<Show when={canSave()}>
+					<button
+						type="button"
+						onClick={handleSave}
+						class="inline-flex items-center gap-1.5 px-3 h-8 rounded-md border border-border text-xs text-success hover:text-foreground hover:bg-surface transition-colors bg-transparent"
+					>
+						<span class="i-mdi:source-branch" aria-hidden="true" />
+						Save to Git
+					</button>
+				</Show>
 			</div>
 			<Show when={message()}>
 				<div class="mb-4 text-sm text-success">{message()}</div>

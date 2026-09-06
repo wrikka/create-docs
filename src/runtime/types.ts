@@ -87,6 +87,8 @@ export interface DocEntry {
 export interface DocContent {
 	content: string;
 	frontmatter?: DocFrontmatter;
+	/** Original file path relative to the collection directory (used by the editor). */
+	path?: string;
 }
 
 /** Nuxt Content-style query over a data source. */

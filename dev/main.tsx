@@ -64,7 +64,7 @@ mountDocsApp({
 	},
 	features: {
 		search: true,
-		askAi: false,
+		askAi: true,
 		editLink: true,
 		lastUpdated: true,
 		themeToggle: true,

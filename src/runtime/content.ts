@@ -289,7 +289,11 @@ export function createStaticDataSource(
 			if (!isVisible(doc.frontmatter, now, options.drafts ?? false)) {
 				throw new Error(`Document is not published: ${id}`);
 			}
-			return { content: doc.content, frontmatter: doc.frontmatter };
+			return {
+				content: doc.content,
+				frontmatter: doc.frontmatter,
+				path: doc.entry.path,
+			};
 		},
 
 		async search(q: string, collection?: string): Promise<SearchResult[]> {

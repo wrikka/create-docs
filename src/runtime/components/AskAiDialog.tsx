@@ -2,6 +2,17 @@ import { createSignal, Show } from "solid-js";
 import { useDocs } from "../context";
 import { DocMarkdown } from "./DocMarkdown";
 
+async function suggest(prompt: string): Promise<string> {
+	const res = await fetch("/api/ai/suggest", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({ prompt }),
+	});
+	const data = (await res.json()) as { suggestion?: string; error?: string };
+	if (!res.ok) throw new Error(data.error ?? "AI request failed");
+	return data.suggestion ?? "";
+}
+
 export function AskAiDialog(props: {
 	open: boolean;
 	onClose: () => void;
@@ -21,17 +32,19 @@ export function AskAiDialog(props: {
 		setLoading(true);
 		setError("");
 		setAnswer("");
-		if (!dataSource.ask) {
-			setError("Ask AI is not configured for this docs site");
-			return;
-		}
 		try {
-			const res = await dataSource.ask({
-				collection: props.collection,
-				id: props.docId,
-				question: q,
-			});
-			setAnswer(res.answer);
+			let answer = "";
+			if (dataSource.ask) {
+				const res = await dataSource.ask({
+					collection: props.collection,
+					id: props.docId,
+					question: q,
+				});
+				answer = res.answer;
+			} else {
+				answer = await suggest(`Document: ${props.docTitle}\nQuestion: ${q}`);
+			}
+			setAnswer(answer);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Failed to get answer");
 		} finally {
