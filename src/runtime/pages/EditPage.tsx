@@ -1,6 +1,7 @@
 import { useParams } from "@tanstack/solid-router";
 import { createResource, createSignal, Show } from "solid-js";
 import { DocMarkdown } from "../components/DocMarkdown";
+import { getGitHubToken } from "../components/GitHubAuth";
 import { useDocs } from "../context";
 import { useCollections } from "../data";
 
@@ -95,9 +96,13 @@ export function EditPage() {
 			return;
 		}
 		try {
+			const userToken = getGitHubToken();
 			const res = await fetch("/api/content/save", {
 				method: "POST",
-				headers: { "Content-Type": "application/json" },
+				headers: {
+					"Content-Type": "application/json",
+					...(userToken ? { Authorization: `Bearer ${userToken}` } : {}),
+				},
 				body: JSON.stringify({
 					...repo,
 					path: `apps/web/create-docs/${collection()}/${filePath}`,
@@ -110,7 +115,7 @@ export function EditPage() {
 			});
 			const data = (await res.json()) as { ok?: boolean; error?: string };
 			if (!res.ok) throw new Error(data.error ?? "Save failed");
-			setMessage("Saved to Git");
+			setMessage("Saved to GitHub");
 		} catch (e) {
 			setMessage(e instanceof Error ? e.message : "Save failed");
 		}
@@ -156,8 +161,8 @@ export function EditPage() {
 						onClick={handleSave}
 						class="inline-flex items-center gap-1.5 px-3 h-8 rounded-md border border-border text-xs text-success hover:text-foreground hover:bg-surface transition-colors bg-transparent"
 					>
-						<span class="i-mdi:source-branch" aria-hidden="true" />
-						Save to Git
+						<span class="i-mdi:github" aria-hidden="true" />
+						Save to GitHub
 					</button>
 				</Show>
 			</div>

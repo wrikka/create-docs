@@ -22,6 +22,7 @@ import { DocPage } from "./pages/DocPage";
 import { EditPage } from "./pages/EditPage";
 import { HomePage } from "./pages/HomePage";
 import { IssuesPage } from "./pages/IssuesPage";
+import { OAuthCallbackPage } from "./pages/OAuthCallbackPage";
 import { PluginsPage } from "./pages/PluginsPage";
 import { ShowcasePage } from "./pages/ShowcasePage";
 
@@ -155,6 +156,13 @@ export function createDocsRouter(config: DocsAppConfig) {
 		component: ShowcasePage,
 	});
 	extraRoutes.push(showcaseRoute);
+
+	const oauthCallbackRoute = createRoute({
+		getParentRoute: () => rootRoute,
+		path: "auth/github/callback",
+		component: OAuthCallbackPage,
+	});
+	extraRoutes.push(oauthCallbackRoute);
 
 	const routeTree = rootRoute.addChildren([
 		indexRoute,

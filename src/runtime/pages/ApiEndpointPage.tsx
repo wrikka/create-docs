@@ -100,6 +100,14 @@ export function ApiEndpointPage() {
 								<code class="text-sm font-mono text-foreground">
 									{ep().path}
 								</code>
+								<Show when={api()?.style}>
+									{(style) => (
+										<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-surface text-[10px] uppercase tracking-wide font-semibold text-muted">
+											<span class="i-mdi:api text-xs" aria-hidden="true" />
+											{style()}
+										</span>
+									)}
+								</Show>
 								<Show when={ep().tag}>
 									<span class="ml-auto text-[11px] uppercase tracking-wide text-muted">
 										{ep().tag}

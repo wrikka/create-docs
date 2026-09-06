@@ -13,6 +13,7 @@ export type { EndpointChange } from "./api-diff";
 export { diffApiCollections } from "./api-diff";
 export { createDocsApp, mountDocsApp } from "./app";
 // Components (for custom pages/layouts)
+export { AccentPicker } from "./components/AccentPicker";
 export { ApiPlayground } from "./components/ApiPlayground";
 export { AskAiDialog } from "./components/AskAiDialog";
 export { BackToTop } from "./components/BackToTop";
@@ -20,7 +21,14 @@ export { Breadcrumbs } from "./components/Breadcrumbs";
 export { CollectionDropdown } from "./components/CollectionDropdown";
 export { DocMarkdown } from "./components/DocMarkdown";
 export { DocPrevNext } from "./components/DocPrevNext";
+export { DocsDropdown } from "./components/DocsDropdown";
 export { DocToc } from "./components/DocToc";
+export {
+	clearGitHubToken,
+	GitHubAuthButton,
+	getGitHubToken,
+	setGitHubToken,
+} from "./components/GitHubAuth";
 export { GitHubStats } from "./components/GitHubStats";
 export { Head } from "./components/Head";
 export { LocaleDropdown } from "./components/LocaleDropdown";
@@ -47,12 +55,14 @@ export type {
 	DocsAppFeatures,
 	DocsVersion,
 	GitHubConfig,
+	GitHubOAuthConfig,
 	HomeConfig,
 	HomeFeature,
 	I18nConfig,
 	LocaleInfo,
 	MarkdownConfig,
 	PluginInfo,
+	ShowcaseInfo,
 	VersionsConfig,
 } from "./config";
 export type { DirMeta, StaticSourceOptions } from "./content";
@@ -67,18 +77,28 @@ export {
 export { DocsProvider, useDocs } from "./context";
 export { createDocsList, useCollections } from "./data";
 export type {
+	BranchInfo,
 	CommitInfo,
 	Contributor,
+	IssueInfo,
 	MilestoneInfo,
 	ReleaseInfo,
 	RepoStats,
+	TagInfo,
 } from "./github";
 export {
+	fetchBranches,
 	fetchCommits,
 	fetchContributors,
+	fetchIssues,
+	fetchLatestCommit,
 	fetchMilestones,
 	fetchReleases,
 	fetchRepoStats,
+	fetchTags,
+	GitHubFetchError,
+	githubApiUrl,
+	shieldsBadge,
 } from "./github";
 // Pages & layouts
 export { DocsLayout } from "./layouts/DocsLayout";
@@ -88,9 +108,13 @@ export { ApiEndpointPage } from "./pages/ApiEndpointPage";
 export { ChangelogPage } from "./pages/ChangelogPage";
 export { CollectionPage } from "./pages/CollectionPage";
 export { CommunityPage } from "./pages/CommunityPage";
+export { CreatePage } from "./pages/CreatePage";
 export { DocPage } from "./pages/DocPage";
 export { HomePage } from "./pages/HomePage";
+export { IssuesPage } from "./pages/IssuesPage";
+export { OAuthCallbackPage } from "./pages/OAuthCallbackPage";
 export { PluginsPage } from "./pages/PluginsPage";
+export { ShowcasePage } from "./pages/ShowcasePage";
 export { setupPwa } from "./pwa";
 export { createDocsRouter } from "./router";
 export type { SeoInput } from "./seo";
@@ -102,7 +126,16 @@ export {
 	generateRss,
 	generateSitemap,
 } from "./seo";
-export { initTheme, useTheme } from "./theme";
+export {
+	type AccentSetting,
+	accentIndex,
+	DAILY_ACCENTS,
+	type DailyAccent,
+	initTheme,
+	setAccent,
+	useAccent,
+	useTheme,
+} from "./theme";
 export type {
 	ApiEndpoint,
 	ApiParameter,

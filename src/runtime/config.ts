@@ -12,14 +12,20 @@ export interface HomeConfig {
 		name?: string;
 		text?: string;
 		tagline?: string;
+		/** Small pill badge above the headline. */
+		badge?: string;
 		actions?: { text: string; link: string; theme?: "brand" | "alt" }[];
 	};
 	features?: HomeFeature[];
+	/** Items for the horizontal feature slider. Defaults to `features`. */
+	slides?: HomeFeature[];
 }
 
 /** A static API collection — endpoints parsed up front (OpenAPI/oRPC adapters). */
 export interface ApiCollection extends CollectionMeta {
 	type: "api";
+	/** API style — shown as a badge on the reference pages. */
+	style?: "rest" | "graphql" | "cli" | "rpc";
 	endpoints: ApiEndpoint[];
 }
 
@@ -41,6 +47,8 @@ export interface DocsAppFeatures {
 	analytics?: boolean;
 	/** Show a toggle to reveal/hide the document frontmatter on doc pages. */
 	frontmatterToggle?: boolean;
+	/** Show an "MCP available" badge linking to the JSON-RPC endpoint. */
+	mcp?: boolean;
 }
 
 export interface MarkdownConfig {
@@ -114,6 +122,21 @@ export interface ShowcaseInfo {
 	badge?: string;
 }
 
+export interface GitHubOAuthConfig {
+	/** Set to false to hide the "Authorize with GitHub" flow. Defaults to true. */
+	enabled?: boolean;
+	/**
+	 * Optional public OAuth client id. The real client id/secret are resolved
+	 * server-side via `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` secrets, so
+	 * this is not required by the client.
+	 */
+	clientId?: string;
+	/** OAuth callback URL. Defaults to `${location.origin}/auth/github/callback`. */
+	redirectUri?: string;
+	/** Requested OAuth scopes. Defaults to "repo". */
+	scope?: string;
+}
+
 export interface GitHubConfig {
 	owner: string;
 	repo: string;
@@ -122,6 +145,7 @@ export interface GitHubConfig {
 	releases?: boolean;
 	contributors?: boolean;
 	issues?: boolean;
+	oauth?: GitHubOAuthConfig;
 }
 
 export interface SiteLink {

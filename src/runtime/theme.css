@@ -99,6 +99,21 @@ body {
 	flex-direction: column;
 }
 
+@keyframes docs-page-enter {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.docs-page-enter {
+	animation: docs-page-enter 0.18s ease-out;
+}
+
 a {
 	color: hsl(var(--color-accent));
 }

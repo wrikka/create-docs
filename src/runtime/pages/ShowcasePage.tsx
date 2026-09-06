@@ -7,12 +7,7 @@ function Card(props: { link?: string; children: JSX.Element }) {
 	const classes =
 		"group border border-border rounded-xl overflow-hidden bg-surface/30 hover:border-focus transition-colors flex flex-col";
 	return props.link ? (
-		<a
-			href={props.link}
-			target="_blank"
-			rel="noreferrer"
-			class={classes}
-		>
+		<a href={props.link} target="_blank" rel="noreferrer" class={classes}>
 			{props.children}
 		</a>
 	) : (
@@ -52,7 +47,10 @@ function ShowcaseCard(props: { item: ShowcaseInfo }) {
 			<div class="p-5 flex flex-col gap-2 flex-1">
 				<div class="flex items-center gap-2">
 					<Show when={item.icon && !item.image}>
-						<span class={`${item.icon} text-xl text-primary`} aria-hidden="true" />
+						<span
+							class={`${item.icon} text-xl text-primary`}
+							aria-hidden="true"
+						/>
 					</Show>
 					<h3 class="font-semibold text-base m-0">{item.label}</h3>
 				</div>
@@ -96,10 +94,7 @@ export function ShowcasePage() {
 
 			<Show when={items().length === 0}>
 				<div class="flex flex-col items-center gap-3 py-16 rounded-lg border border-dashed border-border text-muted">
-					<span
-						class="i-mdi:image-plus text-4xl"
-						aria-hidden="true"
-					/>
+					<span class="i-mdi:image-plus text-4xl" aria-hidden="true" />
 					<p class="m-0">No showcase items configured yet.</p>
 					<p class="text-sm m-0 max-w-md text-center">
 						Add a `showcase` array to your docs config with cover images,

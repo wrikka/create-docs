@@ -8,11 +8,11 @@ import {
 } from "solid-js";
 import { useDocs } from "../context";
 import {
+	type BranchInfo,
+	type CommitInfo,
 	fetchBranches,
 	fetchLatestCommit,
 	fetchTags,
-	type BranchInfo,
-	type CommitInfo,
 	type TagInfo,
 } from "../github";
 
@@ -99,9 +99,7 @@ export function VersionDropdown() {
 	});
 
 	const hasData = () =>
-		(config.versions?.list.length ?? 0) > 1 ||
-		items().length > 0 ||
-		loading();
+		(config.versions?.list.length ?? 0) > 1 || items().length > 0 || loading();
 
 	const onDocClick = (e: MouseEvent) => {
 		if (rootEl && !rootEl.contains(e.target as Node)) setOpen(false);

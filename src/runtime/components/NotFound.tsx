@@ -39,7 +39,11 @@ export function NotFound() {
 		const docsLink = first ? `/${first}` : "/";
 		return [
 			{ label: "Home", to: "/", icon: "i-mdi:home" },
-			{ label: "Documentation", to: docsLink, icon: "i-mdi:book-open-page-variant" },
+			{
+				label: "Documentation",
+				to: docsLink,
+				icon: "i-mdi:book-open-page-variant",
+			},
 			...(config.apiCollections?.[0]
 				? [
 						{

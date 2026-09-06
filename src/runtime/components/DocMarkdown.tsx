@@ -240,6 +240,9 @@ function enhanceMarkdown(el: HTMLDivElement) {
 		if (id) h.id = id;
 	}
 
+	const escapeHtml = (s: string) =>
+		s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+
 	const pres = el.querySelectorAll("pre");
 	for (const pre of pres) {
 		if (pre.querySelector(".rt-code-copy")) continue;
@@ -257,7 +260,55 @@ function enhanceMarkdown(el: HTMLDivElement) {
 			btn.textContent = "Copied!";
 			setTimeout(() => (btn.textContent = original), 1500);
 		});
-		pre.appendChild(btn);
+
+		// Standalone blocks get a header bar (language + filename + copy) and a
+		// collapse toggle when long. Blocks inside code-groups/playgrounds keep
+		// their own chrome.
+		if (
+			!pre.closest(".rt-code-group") &&
+			!pre.closest(".rt-playground") &&
+			!pre.closest(".rt-codeblock")
+		) {
+			const lang =
+				pre.dataset.language ??
+				code?.className.match(/language-(\w+)/)?.[1] ??
+				"text";
+			const filename = pre.dataset.filename ?? pre.getAttribute("title") ?? "";
+			const lines = text.trimEnd().split("\n").length;
+
+			const wrap = document.createElement("div");
+			wrap.className = "rt-codeblock";
+			pre.parentNode?.insertBefore(wrap, pre);
+
+			const header = document.createElement("div");
+			header.className = "rt-codeblock__header";
+			header.innerHTML =
+				'<span class="i-mdi:code-tags rt-codeblock__icon" aria-hidden="true"></span>' +
+				(filename
+					? `<span class="rt-codeblock__filename">${escapeHtml(filename)}</span>`
+					: "") +
+				`<span class="rt-codeblock__lang">${escapeHtml(lang)}</span>`;
+			header.appendChild(btn);
+			wrap.appendChild(header);
+			wrap.appendChild(pre);
+
+			if (lines > 24) {
+				wrap.classList.add("rt-codeblock--collapsed");
+				const toggle = document.createElement("button");
+				toggle.type = "button";
+				toggle.className = "rt-codeblock__expand";
+				toggle.textContent = `Expand (${lines} lines)`;
+				toggle.addEventListener("click", () => {
+					const collapsedNow = wrap.classList.toggle("rt-codeblock--collapsed");
+					toggle.textContent = collapsedNow
+						? `Expand (${lines} lines)`
+						: "Collapse";
+				});
+				wrap.appendChild(toggle);
+			}
+		} else {
+			pre.appendChild(btn);
+		}
 	}
 
 	const tabLists = el.querySelectorAll<HTMLDivElement>(

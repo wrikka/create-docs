@@ -4,7 +4,6 @@ import {
 	createSignal,
 	For,
 	onCleanup,
-	onMount,
 	Show,
 } from "solid-js";
 
@@ -72,7 +71,6 @@ function TocLinkItem(props: {
 export function DocToc(props: { source: string }) {
 	const [toc] = createResource(() => props.source, parseToc);
 	const [activeId, setActiveId] = createSignal<string | undefined>();
-	const [progress, setProgress] = createSignal(0);
 	let listRef: HTMLUListElement | undefined;
 
 	const scrollTo = (id: string) => {
@@ -106,17 +104,6 @@ export function DocToc(props: { source: string }) {
 		onCleanup(() => observer.disconnect());
 	});
 
-	onMount(() => {
-		const onScroll = () => {
-			const st = window.scrollY;
-			const docH = document.documentElement.scrollHeight - window.innerHeight;
-			const pct = docH <= 0 ? 0 : Math.min(100, Math.max(0, (st / docH) * 100));
-			setProgress(pct);
-		};
-		window.addEventListener("scroll", onScroll, { passive: true });
-		onCleanup(() => window.removeEventListener("scroll", onScroll));
-	});
-
 	createEffect(() => {
 		const id = activeId();
 		if (!id || !listRef) return;
@@ -131,16 +118,9 @@ export function DocToc(props: { source: string }) {
 	return (
 		<nav aria-label="On this page" class="rt-toc">
 			<div class="sticky top-0 bg-background z-10 pb-2 border-b border-border mb-2">
-				<div class="rt-toc__title flex items-center justify-between">
+				<div class="rt-toc__title flex items-center gap-1.5">
+					<span class="i-mdi:format-list-bulleted" aria-hidden="true" />
 					<span>On this page</span>
-					<span class="text-xs text-muted">{progress()}%</span>
-				</div>
-				<div class="h-1 w-full bg-muted/20 rounded-full overflow-hidden mt-1.5">
-					<div
-						class="h-full bg-primary transition-[width]"
-						style={{ width: `${progress()}%` }}
-						aria-hidden="true"
-					/>
 				</div>
 			</div>
 			<Show

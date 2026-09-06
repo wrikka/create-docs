@@ -1,4 +1,9 @@
-import { createSignal, For, Show } from "solid-js";
+import { createSignal, For, onMount, Show } from "solid-js";
+import {
+	clearGitHubToken,
+	GitHubAuthButton,
+	getGitHubToken,
+} from "../components/GitHubAuth";
 
 interface Template {
 	id: string;
@@ -38,25 +43,37 @@ export function CreatePage() {
 	>("template");
 	const [selected, setSelected] = createSignal<string>("docs");
 	const [repo, setRepo] = createSignal("");
-	const [token, setToken] = createSignal("");
+	const [repoUrl, setRepoUrl] = createSignal("");
+	const [token, setToken] = createSignal(getGitHubToken() ?? "");
+	const [showManual, setShowManual] = createSignal(!getGitHubToken());
 	const [cfToken, setCfToken] = createSignal("");
 	const [loading, setLoading] = createSignal(false);
 	const [error, setError] = createSignal("");
+
+	onMount(() => {
+		const t = getGitHubToken();
+		if (t) setToken(t);
+	});
 
 	const pick = (id: string) => {
 		setSelected(id);
 		setStep("github");
 	};
 
+	const onAuth = (t: string) => {
+		setToken(t);
+		setShowManual(false);
+	};
+
 	const createRepo = async () => {
 		if (!repo() || !token()) {
-			setError("Please enter a repository name and GitHub token.");
+			setError("Please enter a repository name and authorize with GitHub.");
 			return;
 		}
 		setLoading(true);
 		setError("");
 		try {
-			const res = await fetch("https://api.github.com/user/repos", {
+			const res = await fetch("/api/github/user/repos", {
 				method: "POST",
 				headers: {
 					Authorization: `Bearer ${token()}`,
@@ -70,10 +87,14 @@ export function CreatePage() {
 					auto_init: true,
 				}),
 			});
+			const data = (await res.json().catch(() => ({}))) as {
+				html_url?: string;
+				message?: string;
+			};
 			if (!res.ok) {
-				const body = await res.json().catch(() => ({}));
-				throw new Error(body.message ?? `GitHub error ${res.status}`);
+				throw new Error(data.message ?? `GitHub error ${res.status}`);
 			}
+			if (data.html_url) setRepoUrl(data.html_url);
 			setStep("deploy");
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Failed to create repository.");
@@ -189,17 +210,71 @@ export function CreatePage() {
 						placeholder="my-docs"
 						class="w-full h-10 px-3 rounded-md border border-border bg-background text-foreground mb-4 outline-none focus:border-focus"
 					/>
-					<label for="github-token" class="block text-sm text-muted mb-1">
-						GitHub personal access token
-					</label>
-					<input
-						id="github-token"
-						type="password"
-						value={token()}
-						onInput={(e) => setToken(e.currentTarget.value)}
-						placeholder="ghp_..."
-						class="w-full h-10 px-3 rounded-md border border-border bg-background text-foreground mb-4 outline-none focus:border-focus"
-					/>
+					<div class="mb-4">
+						<Show
+							when={!showManual()}
+							fallback={
+								<div class="space-y-2">
+									<label
+										for="github-token"
+										class="block text-sm text-muted mb-1"
+									>
+										GitHub personal access token
+									</label>
+									<input
+										id="github-token"
+										type="password"
+										value={token()}
+										onInput={(e) => setToken(e.currentTarget.value)}
+										placeholder="ghp_..."
+										class="w-full h-10 px-3 rounded-md border border-border bg-background text-foreground outline-none focus:border-focus"
+									/>
+								</div>
+							}
+						>
+							<div class="flex items-center justify-between">
+								<GitHubAuthButton
+									onToken={onAuth}
+									label={
+										token()
+											? "Re-authorize with GitHub"
+											: "Authorize with GitHub"
+									}
+								/>
+								<Show when={token()}>
+									<div class="flex items-center gap-2 text-sm text-muted">
+										<span
+											class="i-mdi:check-circle text-primary"
+											aria-hidden="true"
+										/>
+										<span>Authorized</span>
+										<button
+											type="button"
+											onClick={() => {
+												clearGitHubToken();
+												setToken("");
+												setShowManual(true);
+											}}
+											class="text-xs text-destructive hover:underline"
+										>
+											Clear
+										</button>
+									</div>
+								</Show>
+							</div>
+						</Show>
+						<div class="mt-2">
+							<button
+								type="button"
+								onClick={() => setShowManual(!showManual())}
+								class="text-xs text-muted hover:text-foreground underline"
+							>
+								{showManual()
+									? "Use GitHub OAuth instead"
+									: "Use personal access token instead"}
+							</button>
+						</div>
+					</div>
 					<Show when={error()}>
 						<p class="text-sm text-destructive mb-3">{error()}</p>
 					</Show>
@@ -236,6 +311,9 @@ export function CreatePage() {
 					</h2>
 					<p class="text-sm text-muted mb-4">
 						Enter your Cloudflare API token to deploy the new docs site.
+						<span class="block mt-1 text-xs">
+							Preview — the deploy step is not wired to the Cloudflare API yet.
+						</span>
 					</p>
 					<label for="cf-token" class="block text-sm text-muted mb-1">
 						Cloudflare API token
@@ -280,11 +358,11 @@ export function CreatePage() {
 					</div>
 					<h2 class="text-xl font-semibold mb-2">You're ready to ship!</h2>
 					<p class="text-sm text-muted mb-6">
-						Repository <code class="font-mono">{repo()}</code> created and
-						deployment queued.
+						Repository <code class="font-mono">{repo()}</code> created. The
+						Cloudflare deploy step above is a preview.
 					</p>
 					<a
-						href={`https://github.com/${repo()}`}
+						href={repoUrl() || `https://github.com/${repo()}`}
 						target="_blank"
 						rel="noreferrer"
 						class="inline-flex items-center gap-2 px-5 h-11 rounded-md bg-primary text-primary-foreground no-underline font-medium hover:bg-primary-hover transition-colors"

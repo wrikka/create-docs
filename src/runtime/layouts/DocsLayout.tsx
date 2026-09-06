@@ -1,5 +1,10 @@
-import { Outlet, useNavigate, useParams } from "@tanstack/solid-router";
-import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import {
+	Outlet,
+	useLocation,
+	useNavigate,
+	useParams,
+} from "@tanstack/solid-router";
+import { createEffect, createSignal, onCleanup, onMount, Show } from "solid-js";
 import { BackToTop } from "../components/BackToTop";
 import { Banner } from "../components/Banner";
 import { Footer } from "../components/Footer";
@@ -17,6 +22,17 @@ export function DocsLayout() {
 	const inCollection = () => !!params().collection;
 	const navigate = useNavigate();
 	const [docs] = createDocsList(() => params().collection ?? "");
+	const location = useLocation();
+	let mainRef: HTMLElement | undefined;
+
+	createEffect(() => {
+		location().pathname;
+		const el = mainRef;
+		if (!el) return;
+		el.classList.remove("docs-page-enter");
+		void el.offsetWidth;
+		el.classList.add("docs-page-enter");
+	});
 
 	const focusable = (target: EventTarget | null) => {
 		if (!(target instanceof HTMLElement)) return false;
@@ -106,11 +122,14 @@ export function DocsLayout() {
 					<button
 						type="button"
 						aria-label="Close sidebar"
-						class="fixed inset-0 top-[calc(3.5rem+var(--docs-banner-height,0px))] z-20 bg-overlay lg:hidden cursor-default"
+						class="fixed inset-0 top-[var(--docs-banner-height,0px)] z-20 bg-overlay lg:hidden cursor-default"
 						onClick={() => setNavOpen(false)}
 					/>
 				</Show>
 				<main
+					ref={(el) => {
+						mainRef = el;
+					}}
 					class={`flex-1 min-w-0 pb-16 lg:pb-0 ${inCollection() ? "lg:pl-72" : ""}`}
 				>
 					<Outlet />

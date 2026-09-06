@@ -76,9 +76,7 @@ export function IssuesPage() {
 				</div>
 			</Show>
 
-			<Show
-				when={!loading() && !error() && issues().length === 0}
-			>
+			<Show when={!loading() && !error() && issues().length === 0}>
 				<div class="flex flex-col items-center gap-3 py-16 rounded-lg border border-dashed border-border text-muted">
 					<span class="i-mdi:check-circle text-4xl" aria-hidden="true" />
 					<p class="m-0">No open issues.</p>

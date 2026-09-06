@@ -17,6 +17,20 @@ export function Footer() {
 					<div class="text-xs">
 						© {year} {config.footer?.copyright ?? config.site.title}
 					</div>
+					<Show when={config.features?.mcp}>
+						<a
+							href="/mcp"
+							target="_blank"
+							rel="noreferrer"
+							class="inline-flex items-center gap-1 mt-1 px-2 py-0.5 w-fit rounded-full border border-border bg-background text-[11px] font-semibold text-muted hover:text-foreground hover:border-focus transition-colors no-underline"
+						>
+							<span
+								class="i-mdi:robot-outline text-primary"
+								aria-hidden="true"
+							/>
+							MCP available · /mcp
+						</a>
+					</Show>
 				</div>
 				<Show when={links().length}>
 					<nav class="flex flex-wrap gap-4" aria-label="Footer">

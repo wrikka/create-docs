@@ -3,8 +3,10 @@ import { createSignal, For, onMount, Show } from "solid-js";
 import type { SiteLink } from "../config";
 import { useDocs } from "../context";
 import { setTheme, useTheme } from "../theme";
+import { AccentPicker } from "./AccentPicker";
 import { CollectionDropdown } from "./CollectionDropdown";
 import { CustomizeDrawer } from "./CustomizeDrawer";
+import { DocsDropdown } from "./DocsDropdown";
 import { LocaleDropdown } from "./LocaleDropdown";
 import { setSearchOpen } from "./SearchPalette";
 import { ThemeToggle } from "./ThemeToggle";
@@ -138,7 +140,7 @@ export function TopNav(props: {
 
 	return (
 		<>
-			<header class="sticky top-[var(--docs-banner-height,0px)] z-40 h-14 flex items-center gap-3 px-4 border-b border-border bg-background/95 backdrop-blur">
+			<header class="sticky top-[var(--docs-banner-height,0px)] z-40 h-14 hidden lg:flex items-center gap-3 px-4 border-b border-border bg-background/95 backdrop-blur">
 				<button
 					type="button"
 					onClick={props.onMenuToggle}
@@ -171,6 +173,7 @@ export function TopNav(props: {
 					class="hidden md:flex flex-1 items-center justify-center gap-1"
 					aria-label="Site"
 				>
+					<DocsDropdown />
 					<For each={allNav()}>
 						{(link) => (
 							<Link
@@ -245,6 +248,7 @@ export function TopNav(props: {
 					</button>
 					<LocaleDropdown />
 					<VersionDropdown />
+					<AccentPicker />
 					<ThemeToggle />
 				</div>
 				<LogoContextMenu

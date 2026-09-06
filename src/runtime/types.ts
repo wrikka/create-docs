@@ -81,6 +81,8 @@ export interface DocEntry {
 	draft?: boolean;
 	/** Per-page SEO overrides. */
 	seo?: DocSeo;
+	/** Optional nested sidebar items — renders as a collapsible submenu. */
+	children?: DocEntry[];
 	type: "rust" | "npm" | "api" | "md";
 }
 

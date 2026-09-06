@@ -64,9 +64,14 @@ export function MobileBottomNav(props: { onMenuToggle: () => void }) {
 	return (
 		<nav
 			aria-label="Mobile bottom navigation"
-			class="fixed bottom-0 left-0 right-0 z-50 h-16 bg-background/95 backdrop-blur border-t border-border lg:hidden pb-[env(safe-area-inset-bottom)]"
+			class="fixed bottom-0 left-0 right-0 z-50 bg-background/95 backdrop-blur border-t border-border lg:hidden pb-[env(safe-area-inset-bottom)]"
 		>
-			<div class="h-16 grid grid-cols-5 items-center">
+			<div
+				class="h-16 min-h-16 grid items-center"
+				style={{
+					"grid-template-columns": `repeat(${items().length + 2}, minmax(0, 1fr))`,
+				}}
+			>
 				<For each={items()}>
 					{(item) => (
 						<Link

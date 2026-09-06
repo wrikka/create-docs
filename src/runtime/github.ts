@@ -173,7 +173,9 @@ export async function fetchTags(config: GitHubConfig): Promise<TagInfo[]> {
 	return fetchJson<TagInfo[]>(githubApiUrl(config, "/tags?per_page=30"));
 }
 
-export async function fetchBranches(config: GitHubConfig): Promise<BranchInfo[]> {
+export async function fetchBranches(
+	config: GitHubConfig,
+): Promise<BranchInfo[]> {
 	return fetchJson<BranchInfo[]>(githubApiUrl(config, "/branches?per_page=30"));
 }
 

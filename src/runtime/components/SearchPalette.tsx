@@ -148,6 +148,45 @@ export function SearchPalette() {
 	const collectionLabel = (id: string) =>
 		collections()?.find((c) => c.id === id)?.label ?? id;
 
+	const cmdDescriptions: Record<string, string> = {
+		home: "Navigate back to the documentation home page.",
+		theme: "Toggle between the light and dark color schemes.",
+		"copy-url": "Copy the current page URL to your clipboard.",
+		edit: "Open the markdown editor for the current page.",
+		github: "Open this site's GitHub repository in a new tab.",
+	};
+
+	const selectedItem = (): SearchItem | undefined => items()[selected()];
+
+	const stripMarkdown = (md: string) =>
+		md
+			.replace(/```[\s\S]*?```/g, " [code block] ")
+			.replace(/!\[[^\]]*\]\([^)]*\)/g, "")
+			.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+			.replace(/^#{1,6}\s+/gm, "")
+			.replace(/^>\s?/gm, "")
+			.replace(/[*_`~]/g, "")
+			.replace(/\n{3,}/g, "\n\n")
+			.trim();
+
+	const [preview] = createResource(
+		() => {
+			if (!searchOpen()) return null;
+			const it = selectedItem();
+			return it?.type === "doc"
+				? { collection: it.collection, id: it.id }
+				: null;
+		},
+		async (sel) => {
+			try {
+				const c = await config.dataSource.get(sel.collection, sel.id);
+				return stripMarkdown(c.content).slice(0, 1200);
+			} catch {
+				return "";
+			}
+		},
+	);
+
 	return (
 		<Show when={searchOpen()}>
 			<div
@@ -158,7 +197,7 @@ export function SearchPalette() {
 				onKeyDown={onKey}
 				role="presentation"
 			>
-				<div class="w-full max-w-xl rounded-lg border border-border bg-surface shadow-2xl overflow-hidden">
+				<div class="w-full max-w-3xl rounded-lg border border-border bg-surface shadow-2xl overflow-hidden">
 					<div class="flex items-center gap-2 px-4 border-b border-border">
 						<span class="i-mdi:magnify text-muted" aria-hidden="true" />
 						<input
@@ -177,60 +216,106 @@ export function SearchPalette() {
 							ESC
 						</kbd>
 					</div>
-					<div class="max-h-80 overflow-y-auto">
-						<Show when={results.loading}>
-							<div class="px-4 py-6 text-sm text-muted text-center">
-								Searching…
-							</div>
-						</Show>
-						<Show
-							when={
-								!results.loading &&
-								query().trim().length >= 2 &&
-								docItems().length === 0
-							}
-						>
-							<div class="px-4 py-6 text-sm text-muted text-center">
-								No document results for "{query()}"
-							</div>
-						</Show>
-						<ul class="list-none m-0 p-1">
-							<For each={items()}>
-								{(item, i) => (
-									<li>
-										<button
-											type="button"
-											onClick={() => run(i())}
-											onMouseEnter={() => setSelected(i())}
-											class={`w-full text-left px-3 py-2 rounded-md cursor-pointer border-none transition-colors ${
-												selected() === i() ? "bg-primary/10" : "bg-transparent"
-											}`}
-										>
-											<div class="flex items-center gap-2">
-												<span
-													class={`${item.type === "cmd" ? item.icon : "i-mdi:file-document-outline"} text-muted shrink-0`}
-													aria-hidden="true"
-												/>
-												<span class="text-sm font-medium text-foreground truncate">
-													{item.title}
-												</span>
-												<Show when={item.type === "doc"}>
-													<span class="ml-auto text-[10px] uppercase tracking-wide text-muted shrink-0">
-														{item.type === "doc" &&
-															collectionLabel(item.collection)}
+					<div class="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+						<div class="max-h-80 overflow-y-auto">
+							<Show when={results.loading}>
+								<div class="px-4 py-6 text-sm text-muted text-center">
+									Searching…
+								</div>
+							</Show>
+							<Show
+								when={
+									!results.loading &&
+									query().trim().length >= 2 &&
+									docItems().length === 0
+								}
+							>
+								<div class="px-4 py-6 text-sm text-muted text-center">
+									No document results for "{query()}"
+								</div>
+							</Show>
+							<ul class="list-none m-0 p-1">
+								<For each={items()}>
+									{(item, i) => (
+										<li>
+											<button
+												type="button"
+												onClick={() => run(i())}
+												onMouseEnter={() => setSelected(i())}
+												class={`w-full text-left px-3 py-2 rounded-md cursor-pointer border-none transition-colors ${
+													selected() === i()
+														? "bg-primary/10"
+														: "bg-transparent"
+												}`}
+											>
+												<div class="flex items-center gap-2">
+													<span
+														class={`${item.type === "cmd" ? item.icon : "i-mdi:file-document-outline"} text-muted shrink-0`}
+														aria-hidden="true"
+													/>
+													<span class="text-sm font-medium text-foreground truncate">
+														{item.title}
 													</span>
+													<Show when={item.type === "doc"}>
+														<span class="ml-auto text-[10px] uppercase tracking-wide text-muted shrink-0">
+															{item.type === "doc" &&
+																collectionLabel(item.collection)}
+														</span>
+													</Show>
+												</div>
+												<Show when={item.type === "doc" && item.snippet}>
+													<p class="text-xs text-muted m-0 mt-0.5 pl-6 truncate">
+														{item.type === "doc" && item.snippet}
+													</p>
 												</Show>
+											</button>
+										</li>
+									)}
+								</For>
+							</ul>
+						</div>
+						<div class="hidden md:block border-l border-border max-h-80 overflow-y-auto bg-background/40">
+							{(() => {
+								const it = selectedItem();
+								if (it?.type === "doc") {
+									return (
+										<div class="p-4">
+											<div class="flex items-center gap-2 mb-1">
+												<span class="text-[10px] uppercase tracking-wide text-muted">
+													{collectionLabel(it.collection)}
+												</span>
 											</div>
-											<Show when={item.type === "doc" && item.snippet}>
-												<p class="text-xs text-muted m-0 mt-0.5 pl-6 truncate">
-													{item.type === "doc" && item.snippet}
-												</p>
-											</Show>
-										</button>
-									</li>
-								)}
-							</For>
-						</ul>
+											<h3 class="text-sm font-semibold text-foreground m-0 mb-2">
+												{it.title}
+											</h3>
+											<p class="text-xs text-muted leading-relaxed whitespace-pre-wrap m-0">
+												{preview.loading
+													? "Loading preview…"
+													: preview() || it.snippet || "No preview available."}
+											</p>
+										</div>
+									);
+								}
+								return (
+									<div class="p-4">
+										<div class="flex items-center gap-2 mb-2 text-foreground">
+											<span
+												class={`${it?.type === "cmd" ? it.icon : "i-mdi:information-outline"} text-primary`}
+												aria-hidden="true"
+											/>
+											<span class="text-sm font-semibold">
+												{it?.title ?? "Preview"}
+											</span>
+										</div>
+										<p class="text-xs text-muted leading-relaxed m-0">
+											{it?.type === "cmd"
+												? (cmdDescriptions[it.id] ?? "Run this command.")
+												: "Select a result to preview it here."}
+										</p>
+									</div>
+								);
+							})()}
+						</div>
 					</div>
 					<div class="flex items-center gap-3 px-4 py-2 border-t border-border text-[10px] text-muted">
 						<span>
