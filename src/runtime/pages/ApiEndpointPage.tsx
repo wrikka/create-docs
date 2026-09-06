@@ -4,7 +4,7 @@ import { ApiPlayground } from "../components/ApiPlayground";
 import { DocMarkdown } from "../components/DocMarkdown";
 import { DocPrevNext } from "../components/DocPrevNext";
 import { findApiCollection, useDocs } from "../context";
-import type { ApiEndpoint } from "../types";
+import type { ApiEndpoint, DocEntry } from "../types";
 
 const METHOD_BADGE: Record<string, string> = {
 	GET: "bg-accent/15 text-accent border-accent/30",
@@ -145,7 +145,7 @@ export function ApiEndpointPage() {
 	const api = createMemo(() => findApiCollection(config, collection()));
 	const style = () => api()?.style ?? "rest";
 	const endpoint = () => api()?.endpoints.find((e) => e.id === docId());
-	const entries = createMemo(() =>
+	const entries = createMemo<DocEntry[]>(() =>
 		(api()?.endpoints ?? []).map((e) => ({
 			id: e.id,
 			label:

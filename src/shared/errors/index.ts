@@ -170,7 +170,7 @@ const isColorSupported = (): boolean => {
 /** Format an AppError as a multi-line, ANSI-coloured, actionable message. */
 export const formatError = (
 	e: AppError,
-	color = isColorSupported(),
+	color: boolean = isColorSupported(),
 ): string => {
 	const c = (code: string, s: string): string =>
 		color ? `${code}${s}${RESET}` : s;

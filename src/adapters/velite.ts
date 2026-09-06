@@ -37,12 +37,26 @@ export interface VeliteBuildResult {
 }
 
 /**
+ * Velite adapter interface
+ */
+export interface VeliteAdapter {
+	/** Run Velite build */
+	build: () => Promise<VeliteBuildResult>;
+	/** Path to velite.config.ts file */
+	configPath: string;
+	/** Watch mode for development */
+	watch: boolean;
+}
+
+/**
  * Create Velite adapter
  *
  * @param options - Adapter options
  * @returns Build function
  */
-export const createVeliteAdapter = (options: VeliteAdapterOptions = {}) => {
+export const createVeliteAdapter = (
+	options: VeliteAdapterOptions = {},
+): VeliteAdapter => {
 	const { configPath = "velite.config.ts", watch = false } = options;
 
 	/**
@@ -82,7 +96,7 @@ export const createVeliteAdapter = (options: VeliteAdapterOptions = {}) => {
 /**
  * Default Velite adapter instance
  */
-export const defaultVeliteAdapter = createVeliteAdapter();
+export const defaultVeliteAdapter: VeliteAdapter = createVeliteAdapter();
 
 /**
  * Convenience function to build Velite content

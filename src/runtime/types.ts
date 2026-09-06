@@ -1,3 +1,66 @@
+/**
+ * Runtime types for the create-docs Solid app shell.
+ *
+ * A consumer injects a {@link DocsDataSource} so the UI stays
+ * source-agnostic: oRPC, static manifest, CMS, anything.
+ */
+
+export interface CollectionMeta {
+	id: string;
+	label: string;
+	icon?: string;
+	description?: string;
+	/** Optional repository URL used by "Edit on GitHub" etc. */
+	repoUrl?: string;
+	/** "docs" renders markdown pages, "api" renders the API reference layout, "showcase" renders cards. */
+	type?: "docs" | "api" | "showcase";
+	/** Sidebar sections (from `_dir.yml` or manual config) — ordered nav groups. */
+	sections?: {
+		id: string;
+		label: string;
+		icon?: string;
+		order?: number;
+		collapsed?: boolean;
+	}[];
+}
+
+export interface DocSeo {
+	title?: string;
+	description?: string;
+	image?: string;
+	ogType?: "article" | "website";
+	noIndex?: boolean;
+}
+
+/** Frontmatter parsed from a markdown document. */
+export interface DocFrontmatter {
+	title?: string;
+	description?: string;
+	/** Sort order within the sidebar/category. */
+	order?: number;
+	/** Sidebar category override. */
+	category?: string;
+	/** Hide from lists, search, sitemap and feeds (still renderable in dev). */
+	draft?: boolean;
+	/** ISO date — doc is hidden until this time (scheduled publishing). */
+	publishedAt?: string;
+	/** ISO date — shown as "last updated". */
+	lastUpdated?: string;
+	tags?: string[];
+	/** Small badge shown next to the sidebar label. */
+	badge?: string;
+	/** Iconify icon class for the sidebar entry. */
+	icon?: string;
+	/** Page-level overrides. */
+	toc?: boolean;
+	aside?: boolean;
+	editLink?: boolean;
+	layout?: "doc" | "page" | "home";
+	/** Per-page SEO overrides. */
+	seo?: DocSeo;
+	[key: string]: unknown;
+}
+
 /** One Markdown document. */
 export interface DocContent {
 	id: string;
@@ -17,23 +80,34 @@ export interface DocContent {
 	/** Last-updated ISO timestamp. */
 	lastUpdated?: string;
 	/** Frontmatter values parsed from the file. */
-	frontmatter?: Record<string, unknown>;
+	frontmatter?: DocFrontmatter;
 }
 
 export interface DocEntry extends DocContent {
 	/** Support nested sidebar submenus. */
 	children?: DocEntry[];
-	type?: "doc" | "api" | "showcase";
+	/** Excluded from listings when the source filters drafts. */
+	draft?: boolean;
+	/** Original publication timestamp (ISO). */
+	publishedAt?: string;
+	/** Per-page SEO overrides. */
+	seo?: DocSeo;
+	/** Entry render type. */
+	type?: "doc" | "api" | "showcase" | "rust" | "npm" | "md";
 }
 
-/** Minimal collection metadata. */
-export interface CollectionMeta {
-	id: string;
-	label: string;
-	icon?: string;
-	description?: string;
-	/** Collection type used to switch rendering. */
-	type?: "docs" | "api" | "showcase";
+/** Nuxt Content-style query over a data source. */
+export interface DocQuery {
+	collection?: string;
+	/** Filters — all provided fields must match. */
+	where?: {
+		category?: string;
+		tag?: string;
+		draft?: boolean;
+	};
+	sort?: "title" | "order" | "lastUpdated" | "id";
+	order?: "asc" | "desc";
+	limit?: number;
 }
 
 /** Search result returned from buildSearchIndex(). */
@@ -45,15 +119,6 @@ export interface SearchResult {
 	score: number;
 }
 
-export interface DocsDataSource {
-	/** Available collections. */
-	collections(): Promise<CollectionMeta[]> | CollectionMeta[];
-	/** List all documents in a collection. */
-	list(collection: string): Promise<DocEntry[]> | DocEntry[];
-	/** Fetch a single document. */
-	get(collection: string, id: string): Promise<DocContent> | DocContent;
-}
-
 export interface AskInput {
 	collection: string;
 	id: string;
@@ -63,6 +128,22 @@ export interface AskInput {
 export interface AskResult {
 	answer: string;
 	cost?: { tokens?: number; ms?: number };
+}
+
+/** Port — the app shell only talks to this interface. */
+export interface DocsDataSource {
+	/** Available collections. */
+	collections(): Promise<CollectionMeta[]> | CollectionMeta[];
+	/** List all documents in a collection. */
+	list(collection: string): Promise<DocEntry[]> | DocEntry[];
+	/** Fetch a single document. */
+	get(collection: string, id: string): Promise<DocContent> | DocContent;
+	/** Optional full-text search across collections. */
+	search?(q: string, collection?: string): Promise<SearchResult[]> | SearchResult[];
+	/** Optional — enables the Ask AI button when present. */
+	ask?(input: AskInput): Promise<AskResult> | AskResult;
+	/** Optional — Nuxt Content-style filtered/sorted document listing. */
+	query?(q: DocQuery): Promise<DocEntry[]> | DocEntry[];
 }
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
