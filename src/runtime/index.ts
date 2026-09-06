@@ -76,6 +76,12 @@ export { HomePage } from "./pages/HomePage";
 export { PluginsPage } from "./pages/PluginsPage";
 export { setupPwa } from "./pwa";
 export { createDocsRouter } from "./router";
+export {
+	generateRobots,
+	generateRss,
+	generateSitemap,
+} from "./seo";
+export type { SeoInput } from "./seo";
 export { initTheme, useTheme } from "./theme";
 export type {
 	ApiEndpoint,

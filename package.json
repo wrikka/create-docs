@@ -32,6 +32,7 @@
 			"types": "./src/runtime/index.ts",
 			"default": "./src/runtime/index.ts"
 		},
+		"./seo": "./src/runtime/seo.ts",
 		"./theme.css": "./src/runtime/theme.css",
 		"./markdown-content.css": "./src/runtime/markdown-content.css",
 		"./package.json": "./package.json"
