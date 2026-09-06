@@ -13,6 +13,10 @@ export function initTheme(defaultMode: Theme = "dark"): void {
 	document.documentElement.classList.toggle("dark", value === "dark");
 }
 
+export function setTheme(next: Theme) {
+	setThemeSignal(next);
+}
+
 export function useTheme() {
 	createEffect(() => {
 		const value = theme();

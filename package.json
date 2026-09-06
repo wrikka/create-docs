@@ -63,7 +63,8 @@
 	},
 	"homepage": "https://github.com/wrikka/bun-packages/tree/main/apps/web/create-docs#readme",
 	"scripts": {
-		"dev": "bun run src/index.ts",
+		"dev": "vite dev",
+		"dev:lib": "bun run src/index.ts",
 		"build": "bunup",
 		"build:watch": "bunup --watch",
 		"typecheck": "tsc --noEmit",
@@ -104,12 +105,16 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "catalog:",
+		"@iconify-json/mdi": "^1.2.3",
+		"@tanstack/solid-router": "^1.170.30",
 		"@types/bun": "catalog:",
 		"@types/node": "catalog:",
 		"@wrikka/utils": "workspace:*",
 		"bunup": "catalog:",
 		"typescript": "catalog:",
+		"unocss": "catalog:",
 		"vite": "catalog:",
+		"vite-plugin-solid": "^2.11.14",
 		"vitest": "catalog:"
 	},
 	"peerDependencies": {

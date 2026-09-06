@@ -28,6 +28,8 @@ export interface DocsAppFeatures {
 	askAi?: boolean;
 	editLink?: boolean;
 	lastUpdated?: boolean;
+	toc?: boolean;
+	aside?: boolean;
 	themeToggle?: boolean;
 	breadcrumbs?: boolean;
 	reportIssue?: boolean;
@@ -100,14 +102,42 @@ export interface GitHubConfig {
 	contributors?: boolean;
 }
 
-export interface DocsAppConfig {
-	site: {
-		title: string;
-		description?: string;
-		repoUrl?: string;
-		url?: string;
-		ogImage?: string;
+export interface SiteLink {
+	label: string;
+	to: string;
+}
+
+export interface FooterConfig {
+	copyright?: string;
+	links?: SiteLink[];
+}
+
+export interface AnnouncementConfig {
+	text: string;
+	to?: string;
+	closable?: boolean;
+}
+
+export interface SiteConfig {
+	title: string;
+	description?: string;
+	repoUrl?: string;
+	url?: string;
+	ogImage?: string;
+	/** Optional logo icon class. */
+	logo?: string;
+	/** Optional social / external links. */
+	social?: {
+		npm?: string;
+		twitter?: string;
+		discord?: string;
+		youtube?: string;
+		mastodon?: string;
 	};
+}
+
+export interface DocsAppConfig {
+	site: SiteConfig;
 	/** GitHub integration options. */
 	github?: GitHubConfig;
 	/** Injected data source for markdown doc collections. */
@@ -135,4 +165,10 @@ export interface DocsAppConfig {
 	/** Plugin marketplace: entries listed on the `/plugins` page. */
 	plugins?: PluginInfo[];
 	theme?: { defaultMode?: "dark" | "light" };
+	/** Optional fixed announcement banner. */
+	announcement?: AnnouncementConfig;
+	/** Optional footer configuration. */
+	footer?: FooterConfig;
+	/** Optional top navigation links. */
+	topNav?: SiteLink[];
 }

@@ -3,6 +3,21 @@ import { createEffect, onCleanup } from "solid-js";
 import { useDocs } from "../context";
 import "katex/dist/katex.min.css";
 import "../markdown-content.css";
+import {
+	accordionComponent,
+	badgeComponent,
+	cardComponent,
+	cardGridComponent,
+	codePreviewComponent,
+	copyComponent,
+	fileTreeComponent,
+	kbdComponent,
+	tabsComponent,
+	timelineComponent,
+	tooltipComponent,
+	videoComponent,
+	youtubeComponent,
+} from "./markdown/components";
 
 const alertMap: Record<string, string> = {
 	info: "rt-alert--info",
@@ -158,6 +173,19 @@ async function buildRenderer(features: {
 		"code-group": codeGroupComponent,
 		playground: playgroundComponent,
 		steps: stepsComponent,
+		card: cardComponent,
+		"card-grid": cardGridComponent,
+		tabs: tabsComponent,
+		"file-tree": fileTreeComponent,
+		kbd: kbdComponent,
+		badge: badgeComponent,
+		accordion: accordionComponent,
+		youtube: youtubeComponent,
+		video: videoComponent,
+		timeline: timelineComponent,
+		tooltip: tooltipComponent,
+		copy: copyComponent,
+		"code-preview": codePreviewComponent,
 	};
 
 	if (features.mermaid) {
@@ -232,26 +260,36 @@ function enhanceMarkdown(el: HTMLDivElement) {
 		pre.appendChild(btn);
 	}
 
-	const codeGroups = el.querySelectorAll(".rt-code-group");
-	for (const group of codeGroups) {
-		const tabs = group.querySelectorAll<HTMLButtonElement>(
-			".rt-code-group__tab",
-		);
-		const panels = group.querySelectorAll<HTMLDivElement>(
-			".rt-code-group__panel",
-		);
+	const tabLists = el.querySelectorAll<HTMLDivElement>(
+		".rt-code-group, .rt-tabs",
+	);
+	for (const group of tabLists) {
+		const isCodeGroup = group.classList.contains("rt-code-group");
+		const tabSelector = isCodeGroup ? ".rt-code-group__tab" : ".rt-tabs__tab";
+		const panelSelector = isCodeGroup
+			? ".rt-code-group__panel"
+			: ".rt-tabs__panel";
+		const activeTabClass = isCodeGroup
+			? "rt-code-group__tab--active"
+			: "rt-tabs__tab--active";
+		const activePanelClass = isCodeGroup
+			? "rt-code-group__panel--active"
+			: "rt-tabs__panel--active";
+
+		const tabs = group.querySelectorAll<HTMLButtonElement>(tabSelector);
+		const panels = group.querySelectorAll<HTMLDivElement>(panelSelector);
 		for (const tab of tabs) {
 			tab.addEventListener("click", () => {
-				const target = tab.dataset.target;
+				const target = isCodeGroup ? tab.dataset.target : tab.dataset.tab;
 				for (const t of tabs) {
-					t.classList.toggle(
-						"rt-code-group__tab--active",
-						t.dataset.target === target,
-					);
-					t.setAttribute("aria-selected", String(t.dataset.target === target));
+					const active = isCodeGroup
+						? t.dataset.target === target
+						: t.dataset.tab === target;
+					t.classList.toggle(activeTabClass, active);
+					t.setAttribute("aria-selected", String(active));
 				}
 				for (const p of panels) {
-					p.classList.toggle("rt-code-group__panel--active", p.id === target);
+					p.classList.toggle(activePanelClass, p.id === target);
 				}
 			});
 		}
@@ -314,6 +352,116 @@ function enhanceMarkdown(el: HTMLDivElement) {
 			});
 			item.insertBefore(box, item.firstChild);
 		}
+	}
+
+	const youtubeEls = el.querySelectorAll<HTMLDivElement>(".rt-youtube");
+	for (const y of youtubeEls) {
+		if (y.dataset.enhanced) continue;
+		y.dataset.enhanced = "1";
+		const id = y.dataset.id;
+		if (!id) continue;
+		const play = y.querySelector<HTMLButtonElement>(".rt-youtube__play");
+		play?.addEventListener("click", () => {
+			const iframe = document.createElement("iframe");
+			iframe.src = `https://www.youtube-nocookie.com/embed/${id}`;
+			iframe.title = "YouTube video";
+			iframe.allow =
+				"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+			iframe.allowFullscreen = true;
+			iframe.className = "w-full h-full border-0";
+			y.innerHTML = "";
+			y.appendChild(iframe);
+		});
+	}
+
+	const tooltips = el.querySelectorAll<HTMLSpanElement>(".rt-tooltip");
+	for (const tip of tooltips) {
+		if (tip.dataset.enhanced) continue;
+		tip.dataset.enhanced = "1";
+		tip.addEventListener("mouseenter", () => {
+			const text = tip.dataset.tip;
+			if (!text) return;
+			let overlay = tip.querySelector(
+				".rt-tooltip__tip",
+			) as HTMLDivElement | null;
+			if (!overlay) {
+				overlay = document.createElement("div");
+				overlay.className = "rt-tooltip__tip";
+				overlay.textContent = text;
+				tip.appendChild(overlay);
+			}
+			overlay.classList.add("rt-tooltip__tip--visible");
+		});
+		tip.addEventListener("mouseleave", () => {
+			tip
+				.querySelector(".rt-tooltip__tip")
+				?.classList.remove("rt-tooltip__tip--visible");
+		});
+		tip.addEventListener("focus", () =>
+			tip.dispatchEvent(new MouseEvent("mouseenter")),
+		);
+		tip.addEventListener("blur", () =>
+			tip.dispatchEvent(new MouseEvent("mouseleave")),
+		);
+	}
+
+	const copies = el.querySelectorAll<HTMLButtonElement>(".rt-copy");
+	for (const btn of copies) {
+		if (btn.dataset.enhanced) continue;
+		btn.dataset.enhanced = "1";
+		btn.addEventListener("click", async () => {
+			const value = btn.dataset.copy;
+			if (!value) return;
+			try {
+				await navigator.clipboard.writeText(value);
+				const original = btn.textContent;
+				btn.textContent = "Copied!";
+				setTimeout(() => (btn.textContent = original), 1200);
+			} catch {
+				// ignore
+			}
+		});
+	}
+
+	const previews = el.querySelectorAll<HTMLDivElement>(".rt-code-preview");
+	for (const p of previews) {
+		if (p.dataset.enhanced) continue;
+		p.dataset.enhanced = "1";
+		const code = p.dataset.code;
+		if (!code) continue;
+		const result = p.querySelector<HTMLDivElement>(".rt-code-preview__result");
+		if (!result) continue;
+		try {
+			const sandbox = document.createElement("div");
+			sandbox.innerHTML = code;
+			result.appendChild(sandbox);
+		} catch {
+			result.textContent = "Preview unavailable";
+		}
+	}
+
+	const images = el.querySelectorAll<HTMLImageElement>("img");
+	for (const img of images) {
+		if (img.closest("a") || img.classList.contains("rt-image-zoomed")) continue;
+		img.classList.add("rt-image-zoom");
+		img.addEventListener("click", () => {
+			const overlay = document.createElement("div");
+			overlay.className = "rt-image-zoom-overlay";
+			overlay.setAttribute("role", "dialog");
+			overlay.setAttribute("aria-modal", "true");
+			overlay.setAttribute("aria-label", "Image preview");
+			const zoomed = document.createElement("img");
+			zoomed.src = img.src;
+			zoomed.alt = img.alt;
+			zoomed.className = "rt-image-zoomed";
+			overlay.appendChild(zoomed);
+			document.body.appendChild(overlay);
+			const close = () => overlay.remove();
+			overlay.addEventListener("click", close);
+			document.addEventListener("keydown", (e) => {
+				if (e.key === "Escape") close();
+			});
+		});
 	}
 }
 

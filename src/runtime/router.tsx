@@ -5,6 +5,7 @@ import {
 	redirect,
 } from "@tanstack/solid-router";
 import { trackPageView } from "./analytics";
+import { NotFound } from "./components/NotFound";
 import type { DocsAppConfig } from "./config";
 import { findApiCollection } from "./context";
 import { DocsLayout } from "./layouts/DocsLayout";
@@ -15,12 +16,14 @@ import { ChangelogPage } from "./pages/ChangelogPage";
 import { CollectionPage } from "./pages/CollectionPage";
 import { CommunityPage } from "./pages/CommunityPage";
 import { DocPage } from "./pages/DocPage";
+import { EditPage } from "./pages/EditPage";
 import { HomePage } from "./pages/HomePage";
 import { PluginsPage } from "./pages/PluginsPage";
 
 export function createDocsRouter(config: DocsAppConfig) {
 	const rootRoute = createRootRoute({
 		component: () => <DocsLayout />,
+		errorComponent: () => <NotFound />,
 	});
 
 	const indexRoute = createRoute({
@@ -49,6 +52,12 @@ export function createDocsRouter(config: DocsAppConfig) {
 	});
 
 	// One detail route; the page component switches on collection type.
+	const editRoute = createRoute({
+		getParentRoute: () => rootRoute,
+		path: "/edit/$collection/$docId",
+		component: EditPage,
+	});
+
 	const detailRoute = createRoute({
 		getParentRoute: () => rootRoute,
 		path: "/$collection/$docId",
@@ -112,6 +121,7 @@ export function createDocsRouter(config: DocsAppConfig) {
 		indexRoute,
 		collectionRoute,
 		detailRoute,
+		editRoute,
 		...extraRoutes,
 	]);
 
@@ -119,6 +129,7 @@ export function createDocsRouter(config: DocsAppConfig) {
 		routeTree,
 		defaultPreload: "intent",
 		scrollRestoration: true,
+		defaultNotFoundComponent: NotFound,
 	});
 
 	if (config.features?.analytics) {

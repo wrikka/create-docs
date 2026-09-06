@@ -6,6 +6,8 @@ import { DocMarkdown } from "../components/DocMarkdown";
 import { DocPrevNext } from "../components/DocPrevNext";
 import { DocToc } from "../components/DocToc";
 import { PageActions } from "../components/PageActions";
+import { RelatedDocs } from "../components/RelatedDocs";
+import { SkeletonPage } from "../components/Skeleton";
 import { useDocs } from "../context";
 import { createDocsList } from "../data";
 
@@ -43,13 +45,27 @@ export function DocPage() {
 		},
 	);
 
+	const frontmatter = () => doc()?.frontmatter;
+
+	const pageLayout = () => frontmatter()?.layout ?? "doc";
+	const showToc = () =>
+		pageLayout() === "doc" &&
+		frontmatter()?.toc !== false &&
+		config.features?.toc !== false;
+	const showAside = () =>
+		pageLayout() === "doc" &&
+		frontmatter()?.aside !== false &&
+		config.features?.aside !== false;
+	const showEditLink = () =>
+		frontmatter()?.editLink !== false && config.features?.editLink !== false;
+
 	return (
 		<div class="flex gap-8 max-w-6xl mx-auto px-6 py-8">
 			<article class="flex-1 min-w-0">
 				<Show when={meta()}>
 					{(m) => (
 						<>
-							<Show when={showBreadcrumbs()}>
+							<Show when={showBreadcrumbs() && pageLayout() === "doc"}>
 								<Breadcrumbs
 									collection={collection()}
 									category={m().category}
@@ -57,11 +73,13 @@ export function DocPage() {
 								/>
 							</Show>
 							<div class="flex items-center gap-2 pb-4 mb-2 border-b border-border flex-wrap">
-								<PageActions
-									collection={collection()}
-									doc={m()}
-									source={doc()?.content ?? ""}
-								/>
+								<Show when={showEditLink()}>
+									<PageActions
+										collection={collection()}
+										doc={m()}
+										source={doc()?.content ?? ""}
+									/>
+								</Show>
 								<button
 									type="button"
 									onClick={() => setAskOpen(true)}
@@ -86,24 +104,33 @@ export function DocPage() {
 				<Show
 					when={doc()}
 					fallback={
-						<p class="text-muted text-sm">
-							{doc.error ? "Failed to load document." : "Loading…"}
-						</p>
+						<Show when={doc.error} fallback={<SkeletonPage />}>
+							<p class="text-muted text-sm">Failed to load document.</p>
+						</Show>
 					}
 				>
 					{(d) => <DocMarkdown source={d().content} />}
 				</Show>
-				<DocPrevNext
-					collection={collection()}
-					docs={docs() ?? []}
-					currentId={docId()}
-				/>
+				<Show when={pageLayout() === "doc"}>
+					<DocPrevNext
+						collection={collection()}
+						docs={docs() ?? []}
+						currentId={docId()}
+					/>
+					<Show when={meta()}>
+						{(m) => <RelatedDocs currentId={m().id} currentTags={m().tags} />}
+					</Show>
+				</Show>
 			</article>
-			<aside class="hidden xl:block w-56 shrink-0">
-				<div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
-					<Show when={doc()}>{(d) => <DocToc source={d().content} />}</Show>
-				</div>
-			</aside>
+			<Show when={showAside()}>
+				<aside class="hidden xl:block w-56 shrink-0">
+					<div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+						<Show when={showToc() && doc()}>
+							{(d) => <DocToc source={d().content} />}
+						</Show>
+					</div>
+				</aside>
+			</Show>
 			<AskAiDialog
 				open={askOpen()}
 				onClose={() => setAskOpen(false)}

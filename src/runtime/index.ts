@@ -15,6 +15,7 @@ export { createDocsApp, mountDocsApp } from "./app";
 // Components (for custom pages/layouts)
 export { ApiPlayground } from "./components/ApiPlayground";
 export { AskAiDialog } from "./components/AskAiDialog";
+export { BackToTop } from "./components/BackToTop";
 export { Breadcrumbs } from "./components/Breadcrumbs";
 export { CollectionDropdown } from "./components/CollectionDropdown";
 export { DocMarkdown } from "./components/DocMarkdown";
@@ -24,12 +25,19 @@ export { GitHubStats } from "./components/GitHubStats";
 export { Head } from "./components/Head";
 export { LocaleDropdown } from "./components/LocaleDropdown";
 export { PageActions } from "./components/PageActions";
+export { RelatedDocs } from "./components/RelatedDocs";
+export { ScrollProgress } from "./components/ScrollProgress";
 export {
 	SearchPalette,
 	searchOpen,
 	setSearchOpen,
 } from "./components/SearchPalette";
 export { SidebarNav } from "./components/SidebarNav";
+export {
+	SkeletonBlock,
+	SkeletonPage,
+	SkeletonText,
+} from "./components/Skeleton";
 export { ThemeToggle } from "./components/ThemeToggle";
 export { TopNav } from "./components/TopNav";
 export { VersionDropdown } from "./components/VersionDropdown";
@@ -47,6 +55,15 @@ export type {
 	PluginInfo,
 	VersionsConfig,
 } from "./config";
+export type { DirMeta, StaticSourceOptions } from "./content";
+export {
+	createCompositeDataSource,
+	createRemoteDataSource,
+	createStaticDataSource,
+	parseFrontmatter,
+	queryDocs,
+	relatedDocs,
+} from "./content";
 export { DocsProvider, useDocs } from "./context";
 export { createDocsList, useCollections } from "./data";
 export type {
@@ -76,12 +93,15 @@ export { HomePage } from "./pages/HomePage";
 export { PluginsPage } from "./pages/PluginsPage";
 export { setupPwa } from "./pwa";
 export { createDocsRouter } from "./router";
+export type { SeoInput } from "./seo";
 export {
+	generateAtom,
+	generateJsonFeed,
+	generateLlmsTxt,
 	generateRobots,
 	generateRss,
 	generateSitemap,
 } from "./seo";
-export type { SeoInput } from "./seo";
 export { initTheme, useTheme } from "./theme";
 export type {
 	ApiEndpoint,

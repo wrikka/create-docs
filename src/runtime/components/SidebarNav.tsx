@@ -28,7 +28,7 @@ export function SidebarNav(props: { open: boolean; onNavigate: () => void }) {
 
 	return (
 		<aside
-			class={`fixed lg:sticky top-14 bottom-0 left-0 z-30 w-72 shrink-0 border-r border-border bg-background overflow-y-auto transition-transform lg:translate-x-0 ${props.open ? "translate-x-0" : "-translate-x-full"}`}
+			class={`fixed top-[calc(3.5rem+var(--docs-banner-height,0px))] bottom-0 left-0 z-30 w-72 h-[calc(100vh-3.5rem-var(--docs-banner-height,0px))] shrink-0 border-r border-border bg-background overflow-y-auto transition-transform lg:translate-x-0 ${props.open ? "translate-x-0" : "-translate-x-full"}`}
 		>
 			<div class="p-3 sticky top-0 bg-background z-10 border-b border-border">
 				<label class="flex items-center gap-2 px-3 h-9 rounded-md border border-border bg-surface text-muted text-sm">
