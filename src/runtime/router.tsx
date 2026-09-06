@@ -16,6 +16,8 @@ import { ChangelogPage } from "./pages/ChangelogPage";
 import { CollectionPage } from "./pages/CollectionPage";
 import { CommunityPage } from "./pages/CommunityPage";
 import { DocPage } from "./pages/DocPage";
+import { AbTestPage } from "./pages/AbTestPage";
+import { BuilderPage } from "./pages/BuilderPage";
 import { EditPage } from "./pages/EditPage";
 import { HomePage } from "./pages/HomePage";
 import { PluginsPage } from "./pages/PluginsPage";
@@ -71,6 +73,18 @@ export function createDocsRouter(config: DocsAppConfig) {
 		},
 	});
 
+	const builderRoute = createRoute({
+		getParentRoute: () => rootRoute,
+		path: "/builder",
+		component: BuilderPage,
+	});
+
+	const abTestRoute = createRoute({
+		getParentRoute: () => rootRoute,
+		path: "/ab/$collection/$docId",
+		component: AbTestPage,
+	});
+
 	const extraRoutes = [];
 	if (config.github?.releases) {
 		const changelogRoute = createRoute({
@@ -122,6 +136,8 @@ export function createDocsRouter(config: DocsAppConfig) {
 		collectionRoute,
 		detailRoute,
 		editRoute,
+		builderRoute,
+		abTestRoute,
 		...extraRoutes,
 	]);
 
