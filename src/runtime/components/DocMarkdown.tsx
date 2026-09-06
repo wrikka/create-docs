@@ -1,11 +1,13 @@
-import type { NodeHandler } from "comark";
+import type { ElementNode, NodeHandler } from "comark";
 import { createEffect, onCleanup } from "solid-js";
 import { useDocs } from "../context";
 import "katex/dist/katex.min.css";
 import "../markdown-content.css";
 
 const alertMap: Record<string, string> = {
+	info: "rt-alert--info",
 	note: "rt-alert--note",
+	success: "rt-alert--success",
 	tip: "rt-alert--tip",
 	important: "rt-alert--important",
 	warning: "rt-alert--warning",
@@ -33,6 +35,50 @@ const blockquoteComponent: NodeHandler = async (node, state) => {
 	const cls = alertMap[as] ?? `rt-alert rt-alert--${as}`;
 	const title = as.charAt(0).toUpperCase() + as.slice(1);
 	return `<div class="rt-alert ${cls}" role="alert"><p class="rt-alert__title">${title}</p>${await state.render(children)}</div>`;
+};
+
+const codeGroupComponent: NodeHandler = async (node, state) => {
+	const [, , ...children] = node;
+	if (!children.length) return "";
+
+	const tabs = await Promise.all(
+		children.map(async (child, i) => {
+			const el = child as ElementNode;
+			const [tag, cAttrs] = el;
+			if (tag !== "pre") return null;
+			const label =
+				(cAttrs["data-language"] as string) ||
+				(cAttrs.class as string) ||
+				`tab-${i + 1}`;
+			const html = await state.render(el);
+			const id = `cg-${Math.random().toString(36).slice(2, 8)}-${i}`;
+			return { id, label, html };
+		}),
+	);
+
+	const valid = tabs.filter(Boolean) as {
+		id: string;
+		label: string;
+		html: string;
+	}[];
+	if (!valid.length) return "";
+
+	return `<div class="rt-code-group">
+	<div class="rt-code-group__tabs" role="tablist">
+		${valid
+			.map(
+				(t, i) =>
+					`<button type="button" class="rt-code-group__tab${i === 0 ? " rt-code-group__tab--active" : ""}" data-target="${t.id}" role="tab" aria-selected="${i === 0 ? "true" : "false"}">${t.label}</button>`,
+			)
+			.join("")}
+	</div>
+	${valid
+		.map(
+			(t, i) =>
+				`<div class="rt-code-group__panel${i === 0 ? " rt-code-group__panel--active" : ""}" id="${t.id}" role="tabpanel">${t.html}</div>`,
+		)
+		.join("")}
+</div>`;
 };
 
 async function buildRenderer(features: {
@@ -64,6 +110,7 @@ async function buildRenderer(features: {
 
 	const components: Record<string, NodeHandler> = {
 		blockquote: blockquoteComponent,
+		"code-group": codeGroupComponent,
 	};
 
 	if (features.mermaid) {
@@ -136,6 +183,31 @@ function enhanceMarkdown(el: HTMLDivElement) {
 			setTimeout(() => (btn.textContent = original), 1500);
 		});
 		pre.appendChild(btn);
+	}
+
+	const codeGroups = el.querySelectorAll(".rt-code-group");
+	for (const group of codeGroups) {
+		const tabs = group.querySelectorAll<HTMLButtonElement>(
+			".rt-code-group__tab",
+		);
+		const panels = group.querySelectorAll<HTMLDivElement>(
+			".rt-code-group__panel",
+		);
+		for (const tab of tabs) {
+			tab.addEventListener("click", () => {
+				const target = tab.dataset.target;
+				for (const t of tabs) {
+					t.classList.toggle(
+						"rt-code-group__tab--active",
+						t.dataset.target === target,
+					);
+					t.setAttribute("aria-selected", String(t.dataset.target === target));
+				}
+				for (const p of panels) {
+					p.classList.toggle("rt-code-group__panel--active", p.id === target);
+				}
+			});
+		}
 	}
 }
 

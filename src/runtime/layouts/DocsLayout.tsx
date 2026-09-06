@@ -1,5 +1,6 @@
 import { Outlet, useParams } from "@tanstack/solid-router";
 import { createSignal, onCleanup, onMount, Show } from "solid-js";
+import { Head } from "../components/Head";
 import { SearchPalette, setSearchOpen } from "../components/SearchPalette";
 import { SidebarNav } from "../components/SidebarNav";
 import { TopNav } from "../components/TopNav";
@@ -21,6 +22,7 @@ export function DocsLayout() {
 
 	return (
 		<div class="min-h-screen flex flex-col bg-background text-foreground">
+			<Head />
 			<TopNav onMenuToggle={() => setNavOpen(!navOpen())} />
 			<div class="flex flex-1 min-h-0">
 				<Show when={inCollection()}>
