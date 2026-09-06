@@ -1,49 +1,62 @@
-import { createMemo, For, Show } from "solid-js";
-import { slugify } from "./DocMarkdown";
+import { createResource, For, Show } from "solid-js";
 
-export function DocToc(props: { source: string }) {
-	const headings = createMemo(() => {
-		const list: { depth: number; text: string; id: string }[] = [];
-		const regex = /^(#{1,6})\s+(.+)$/gm;
-		let match = regex.exec(props.source);
-		while (match !== null) {
-			const depth = (match[1] ?? "").length;
-			const raw = (match[2] ?? "").trim().replace(/`/g, "");
-			const id = slugify(raw);
-			if (id) list.push({ depth, text: raw, id });
-			match = regex.exec(props.source);
-		}
-		return list;
+interface TocLink {
+	id: string;
+	text: string;
+	depth: number;
+	children?: TocLink[];
+}
+
+async function parseToc(source: string): Promise<TocLink[]> {
+	const [{ parseMarkdown }, { default: toc }] = await Promise.all([
+		import("comark"),
+		import("@comark/html/plugins/toc"),
+	]);
+	const result = await parseMarkdown(source, {
+		plugins: [toc({ depth: 3, searchDepth: 3 })],
 	});
+	return result.meta?.toc?.links ?? [];
+}
 
+function TocLinkItem(props: { link: TocLink }) {
 	const scrollTo = (id: string) => {
 		document
 			.getElementById(id)
 			?.scrollIntoView({ behavior: "smooth", block: "start" });
 	};
+	return (
+		<li class={`rt-toc__item rt-toc__item--depth-${props.link.depth}`}>
+			<button
+				type="button"
+				class="rt-toc__link"
+				onClick={() => scrollTo(props.link.id)}
+				aria-label={`Jump to ${props.link.text}`}
+			>
+				{props.link.text}
+			</button>
+			<Show when={props.link.children?.length}>
+				<ul class="rt-toc__list">
+					<For each={props.link.children}>
+						{(child) => <TocLinkItem link={child} />}
+					</For>
+				</ul>
+			</Show>
+		</li>
+	);
+}
+
+export function DocToc(props: { source: string }) {
+	const [toc] = createResource(() => props.source, parseToc);
 
 	return (
 		<nav aria-label="On this page" class="rt-toc">
 			<div class="rt-toc__title">On this page</div>
 			<Show
-				when={headings().length > 0}
+				when={!toc.loading && (toc() ?? []).length > 0}
 				fallback={<div class="rt-toc__empty">No headings</div>}
 			>
 				<ul class="rt-toc__list">
-					<For each={headings()}>
-						{(h) => (
-							<li class={`rt-toc__item rt-toc__item--depth-${h.depth}`}>
-								<button
-									type="button"
-									class="rt-toc__link"
-									onClick={() => scrollTo(h.id)}
-									aria-label={`Jump to ${h.text}`}
-								>
-									{h.text}
-								</button>
-							</li>
-						)}
-					</For>
+					<For each={toc()}>{(link) => <TocLinkItem link={link} />}</For>
 				</ul>
 			</Show>
 		</nav>

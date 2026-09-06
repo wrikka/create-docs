@@ -1,5 +1,7 @@
+import type { NodeHandler } from "comark";
 import { createEffect, onCleanup } from "solid-js";
 import { useDocs } from "../context";
+import "katex/dist/katex.min.css";
 import "../markdown-content.css";
 
 const alertMap: Record<string, string> = {
@@ -11,51 +13,91 @@ const alertMap: Record<string, string> = {
 	danger: "rt-alert--danger",
 };
 
-let comarkRender: ((source: string) => Promise<string>) | undefined;
-let comarkLoading: Promise<void> | undefined;
+type RenderFn = (source: string) => Promise<string>;
+type FeatureKey = "base" | "base:math" | "base:mermaid" | "base:math:mermaid";
 
-async function loadComarkRenderer(): Promise<void> {
-	if (comarkRender) return;
+const renderers: Partial<Record<FeatureKey, RenderFn>> = {};
+
+function detectFeatures(source: string): { math: boolean; mermaid: boolean } {
+	const mermaid = source.includes("```mermaid");
+	const math =
+		/\$\$/.test(source) ||
+		/(?:^|[^$\d])\$[^$\s\d][^$\n]*\$(?:[^$]|$)/.test(source);
+	return { math, mermaid };
+}
+
+const blockquoteComponent: NodeHandler = async (node, state) => {
+	const [, attrs, ...children] = node;
+	const as = attrs.as as string | undefined;
+	if (!as) return `<blockquote>${await state.render(children)}</blockquote>`;
+	const cls = alertMap[as] ?? `rt-alert rt-alert--${as}`;
+	const title = as.charAt(0).toUpperCase() + as.slice(1);
+	return `<div class="rt-alert ${cls}" role="alert"><p class="rt-alert__title">${title}</p>${await state.render(children)}</div>`;
+};
+
+async function buildRenderer(features: {
+	math: boolean;
+	mermaid: boolean;
+}): Promise<RenderFn> {
 	const [
 		{ createHtmlRenderer },
 		{ default: security },
 		{ default: rangi },
+		{ default: taskList },
 		{ github },
 	] = await Promise.all([
 		import("@comark/html"),
 		import("@comark/html/plugins/security"),
 		import("@comark/html/plugins/rangi"),
+		import("@comark/html/plugins/task-list"),
 		import("rangi/themes"),
 	]);
-	comarkRender = createHtmlRenderer({
-		plugins: [
-			security({
-				blockedTags: ["script", "iframe", "object", "embed", "link", "style"],
-				allowedProtocols: ["https", "http", "mailto"],
-			}),
-			rangi({ theme: github }),
-		],
-		components: {
-			blockquote: async (
-				[, attrs, ...children],
-				{ render },
-			): Promise<string> => {
-				const as = attrs.as as string | undefined;
-				if (!as) return `<blockquote>${await render(children)}</blockquote>`;
-				const cls = alertMap[as] ?? `rt-alert rt-alert--${as}`;
-				const title = as.charAt(0).toUpperCase() + as.slice(1);
-				return `<div class="rt-alert ${cls}" role="alert"><p class="rt-alert__title">${title}</p>${await render(children)}</div>`;
-			},
-		},
-	});
+
+	const plugins = [
+		security({
+			blockedTags: ["script", "iframe", "object", "embed", "link", "style"],
+			allowedProtocols: ["https", "http", "mailto"],
+		}),
+		rangi({ theme: github }),
+		taskList(),
+	];
+
+	const components: Record<string, NodeHandler> = {
+		blockquote: blockquoteComponent,
+	};
+
+	if (features.mermaid) {
+		const mermaidModule = await import("@comark/html/plugins/mermaid");
+		plugins.push(mermaidModule.default());
+		components.mermaid = mermaidModule.Mermaid as NodeHandler;
+	}
+
+	if (features.math) {
+		const mathModule = await import("@comark/html/plugins/math");
+		plugins.push(mathModule.default());
+		components.math = mathModule.Math as NodeHandler;
+	}
+
+	return createHtmlRenderer({ plugins, components });
 }
 
-type RenderFn = (source: string) => Promise<string>;
+function getRendererKey(features: {
+	math: boolean;
+	mermaid: boolean;
+}): FeatureKey {
+	if (features.math && features.mermaid) return "base:math:mermaid";
+	if (features.math) return "base:math";
+	if (features.mermaid) return "base:mermaid";
+	return "base";
+}
 
-function getComarkRender(): Promise<RenderFn> {
-	if (comarkRender) return Promise.resolve(comarkRender);
-	if (!comarkLoading) comarkLoading = loadComarkRenderer();
-	return comarkLoading.then(() => comarkRender as RenderFn);
+async function getComarkRender(source: string): Promise<RenderFn> {
+	const features = detectFeatures(source);
+	const key = getRendererKey(features);
+	if (!renderers[key]) {
+		renderers[key] = await buildRenderer(features);
+	}
+	return renderers[key] as RenderFn;
 }
 
 export function slugify(text: string): string {
@@ -112,7 +154,7 @@ export function DocMarkdown(props: { source: string }) {
 			const str =
 				engine === "marked"
 					? await applyMarked(props.source)
-					: await (await getComarkRender())(props.source);
+					: await (await getComarkRender(props.source))(props.source);
 			el.innerHTML = str;
 			queueMicrotask(() => enhanceMarkdown(el as HTMLDivElement));
 		} catch (err) {
