@@ -1,7 +1,4 @@
-import {
-	createCompositeDataSource,
-	createStaticDataSource,
-} from "@wrikka/create-docs/solid";
+import { createStaticDataSource } from "@wrikka/create-docs/solid";
 
 const guideFiles = import.meta.glob("../docs/**/*.{md,yml,yaml}", {
 	query: "?raw",
@@ -21,35 +18,35 @@ const showcaseFiles = import.meta.glob("../showcase/**/*.{md,yml,yaml}", {
 	eager: true,
 }) as Record<string, string>;
 
-export const dataSource = createCompositeDataSource([
-	createStaticDataSource({
-		meta: {
-			id: "docs",
-			label: "Docs",
-			icon: "i-mdi:book-open-page-variant",
-			description: "create-docs guide",
+export const dataSource = createStaticDataSource({
+	collections: [
+		{
+			meta: {
+				id: "docs",
+				label: "Docs",
+				icon: "i-mdi:book-open-page-variant",
+				description: "create-docs guide",
+			},
+			files: guideFiles,
 		},
-		files: guideFiles,
-		drafts: true,
-	}),
-	createStaticDataSource({
-		meta: {
-			id: "api",
-			label: "API",
-			icon: "i-mdi:code-json",
-			description: "Runtime and plugin API reference",
+		{
+			meta: {
+				id: "api",
+				label: "API",
+				icon: "i-mdi:code-json",
+				description: "Runtime and plugin API reference",
+			},
+			files: apiFiles,
 		},
-		files: apiFiles,
-		drafts: true,
-	}),
-	createStaticDataSource({
-		meta: {
-			id: "showcase",
-			label: "Showcase",
-			icon: "i-mdi:view-dashboard",
-			description: "UI components and layout showcase",
+		{
+			meta: {
+				id: "showcase",
+				label: "Showcase",
+				icon: "i-mdi:view-dashboard",
+				description: "UI components and layout showcase",
+			},
+			files: showcaseFiles,
 		},
-		files: showcaseFiles,
-		drafts: true,
-	}),
-]);
+	],
+	drafts: true,
+});

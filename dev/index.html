@@ -8,6 +8,16 @@
   </head>
   <body>
     <div id="root"></div>
+    <pre id="errors" style="display:none;position:fixed;inset:0;z-50;background:#0b0d12;color:#ff6b6b;padding:2rem;overflow:auto;font-family:monospace"></pre>
     <script type="module" src="./main.tsx"></script>
+    <script>
+      const el = document.getElementById('errors');
+      function show(msg) {
+        el.style.display = 'block';
+        el.textContent += msg + '\n';
+      }
+      window.onerror = (m, s, l, c, e) => show('ERROR: ' + m + '\n' + (e && e.stack));
+      window.addEventListener('unhandledrejection', e => show('REJECTION: ' + e.reason + '\n' + (e.reason && e.reason.stack)));
+    </script>
   </body>
 </html>

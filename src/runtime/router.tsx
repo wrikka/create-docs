@@ -9,15 +9,15 @@ import { NotFound } from "./components/NotFound";
 import type { DocsAppConfig } from "./config";
 import { findApiCollection } from "./context";
 import { DocsLayout } from "./layouts/DocsLayout";
+import { AbTestPage } from "./pages/AbTestPage";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
 import { ApiDiffPage } from "./pages/ApiDiffPage";
 import { ApiEndpointPage } from "./pages/ApiEndpointPage";
+import { BuilderPage } from "./pages/BuilderPage";
 import { ChangelogPage } from "./pages/ChangelogPage";
 import { CollectionPage } from "./pages/CollectionPage";
 import { CommunityPage } from "./pages/CommunityPage";
 import { DocPage } from "./pages/DocPage";
-import { AbTestPage } from "./pages/AbTestPage";
-import { BuilderPage } from "./pages/BuilderPage";
 import { EditPage } from "./pages/EditPage";
 import { HomePage } from "./pages/HomePage";
 import { PluginsPage } from "./pages/PluginsPage";
@@ -49,20 +49,20 @@ export function createDocsRouter(config: DocsAppConfig) {
 
 	const collectionRoute = createRoute({
 		getParentRoute: () => rootRoute,
-		path: "/$collection",
+		path: "$collection",
 		component: CollectionPage,
 	});
 
 	// One detail route; the page component switches on collection type.
 	const editRoute = createRoute({
 		getParentRoute: () => rootRoute,
-		path: "/edit/$collection/$docId",
+		path: "edit/$collection/$docId",
 		component: EditPage,
 	});
 
 	const detailRoute = createRoute({
 		getParentRoute: () => rootRoute,
-		path: "/$collection/$docId",
+		path: "$collection/$docId",
 		component: () => {
 			const params = detailRoute.useParams();
 			return findApiCollection(config, params().collection) ? (
@@ -75,13 +75,13 @@ export function createDocsRouter(config: DocsAppConfig) {
 
 	const builderRoute = createRoute({
 		getParentRoute: () => rootRoute,
-		path: "/builder",
+		path: "builder",
 		component: BuilderPage,
 	});
 
 	const abTestRoute = createRoute({
 		getParentRoute: () => rootRoute,
-		path: "/ab/$collection/$docId",
+		path: "ab/$collection/$docId",
 		component: AbTestPage,
 	});
 
@@ -89,7 +89,7 @@ export function createDocsRouter(config: DocsAppConfig) {
 	if (config.github?.releases) {
 		const changelogRoute = createRoute({
 			getParentRoute: () => rootRoute,
-			path: "/changelog",
+			path: "changelog",
 			component: ChangelogPage,
 		});
 		extraRoutes.push(changelogRoute);
@@ -98,7 +98,7 @@ export function createDocsRouter(config: DocsAppConfig) {
 	if (config.github?.contributors) {
 		const communityRoute = createRoute({
 			getParentRoute: () => rootRoute,
-			path: "/community",
+			path: "community",
 			component: CommunityPage,
 		});
 		extraRoutes.push(communityRoute);
@@ -107,7 +107,7 @@ export function createDocsRouter(config: DocsAppConfig) {
 	if (config.features?.analytics) {
 		const analyticsRoute = createRoute({
 			getParentRoute: () => rootRoute,
-			path: "/analytics",
+			path: "analytics",
 			component: AnalyticsPage,
 		});
 		extraRoutes.push(analyticsRoute);
@@ -116,7 +116,7 @@ export function createDocsRouter(config: DocsAppConfig) {
 	if (config.apiDiff) {
 		const apiDiffRoute = createRoute({
 			getParentRoute: () => rootRoute,
-			path: "/api-diff",
+			path: "api-diff",
 			component: ApiDiffPage,
 		});
 		extraRoutes.push(apiDiffRoute);
@@ -125,7 +125,7 @@ export function createDocsRouter(config: DocsAppConfig) {
 	if (config.plugins?.length) {
 		const pluginsRoute = createRoute({
 			getParentRoute: () => rootRoute,
-			path: "/plugins",
+			path: "plugins",
 			component: PluginsPage,
 		});
 		extraRoutes.push(pluginsRoute);
