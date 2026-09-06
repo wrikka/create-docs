@@ -65,7 +65,8 @@ export interface DocFrontmatter {
 export interface DocContent {
 	id: string;
 	label: string;
-	content: string;
+	/** Body may be omitted in lightweight entries. */
+	content?: string;
 	category?: string;
 	order?: number;
 	icon?: string;
@@ -84,6 +85,12 @@ export interface DocContent {
 }
 
 export interface DocEntry extends DocContent {
+	/** Sidebar category (required for grouping). */
+	category: string;
+	/** Short description. */
+	description: string;
+	/** Original file path / route path. */
+	path: string;
 	/** Support nested sidebar submenus. */
 	children?: DocEntry[];
 	/** Excluded from listings when the source filters drafts. */
@@ -94,6 +101,8 @@ export interface DocEntry extends DocContent {
 	seo?: DocSeo;
 	/** Entry render type. */
 	type?: "doc" | "api" | "showcase" | "rust" | "npm" | "md";
+	/** Nav entries may omit the full body content. */
+	content?: string;
 }
 
 /** Nuxt Content-style query over a data source. */
@@ -139,7 +148,10 @@ export interface DocsDataSource {
 	/** Fetch a single document. */
 	get(collection: string, id: string): Promise<DocContent> | DocContent;
 	/** Optional full-text search across collections. */
-	search?(q: string, collection?: string): Promise<SearchResult[]> | SearchResult[];
+	search?(
+		q: string,
+		collection?: string,
+	): Promise<SearchResult[]> | SearchResult[];
 	/** Optional — enables the Ask AI button when present. */
 	ask?(input: AskInput): Promise<AskResult> | AskResult;
 	/** Optional — Nuxt Content-style filtered/sorted document listing. */

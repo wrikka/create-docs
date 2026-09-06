@@ -27,10 +27,13 @@ function endpointMarkdown(ep: ApiEndpoint, style: string): string {
 	if (style === "cli") {
 		if (ep.description) lines.push(ep.description, "");
 		const cmd = ep.cli
-			? [ep.cli.command, ep.cli.subcommand, ...(ep.cli.args?.map((a) =>
-					a.required ? `<${a.name}>` : `[${a.name}]`,
-				) ?? []),
-			].join(" ")
+			? [
+					ep.cli.command,
+					ep.cli.subcommand,
+					...(ep.cli.args?.map((a) =>
+						a.required ? `<${a.name}>` : `[${a.name}]`,
+					) ?? []),
+				].join(" ")
 			: `${ep.method} ${ep.path}`;
 		lines.push("## Usage", "", "```bash", cmd, "```", "");
 		if (ep.cli?.args?.length) {
@@ -88,7 +91,8 @@ function endpointMarkdown(ep: ApiEndpoint, style: string): string {
 		}
 		if (ep.requestBody) {
 			lines.push("## Request Body", "");
-			if (ep.requestBody.description) lines.push(ep.requestBody.description, "");
+			if (ep.requestBody.description)
+				lines.push(ep.requestBody.description, "");
 			if (ep.requestBody.example != null) {
 				lines.push(
 					"```json",
@@ -198,9 +202,7 @@ export function ApiEndpointPage() {
 									</span>
 								</Show>
 
-								<span
-									class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-surface text-[10px] uppercase tracking-wide font-semibold text-muted"
-								>
+								<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-surface text-[10px] uppercase tracking-wide font-semibold text-muted">
 									<span
 										class={`${STYLE_ICON[style()] ?? "i-mdi:api"} text-xs`}
 										aria-hidden="true"
@@ -237,12 +239,7 @@ export function ApiEndpointPage() {
 						Try it
 					</p>
 					<Show when={endpoint()}>
-						{(ep) => (
-							<ApiPlayground
-								endpoint={ep()}
-								style={style()}
-							/>
-						)}
+						{(ep) => <ApiPlayground endpoint={ep()} style={style()} />}
 					</Show>
 				</div>
 			</aside>

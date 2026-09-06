@@ -55,7 +55,7 @@ function SidebarDocItem(props: {
 					}`}
 				>
 					<span
-						class={`${props.doc.icon ?? typeIcon(props.doc.type)} shrink-0 opacity-70`}
+						class={`${props.doc.icon ?? typeIcon(props.doc.type ?? "")} shrink-0 opacity-70`}
 						aria-hidden="true"
 					/>
 					<span class="truncate">{props.doc.label}</span>
@@ -135,8 +135,8 @@ export function SidebarNav(props: { open: boolean; onNavigate: () => void }) {
 			(d) =>
 				!q ||
 				d.label.toLowerCase().includes(q) ||
-				d.category.toLowerCase().includes(q) ||
-				d.description.toLowerCase().includes(q),
+				(d.category ?? "").toLowerCase().includes(q) ||
+				(d.description ?? "").toLowerCase().includes(q),
 		);
 		const groups = new Map<string, DocEntry[]>();
 		for (const d of list) {

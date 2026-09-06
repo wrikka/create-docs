@@ -87,7 +87,7 @@ export function CollectionPage() {
 													class="flex items-start gap-3 p-4 rounded-xl border border-border bg-surface/30 no-underline hover:border-focus transition-colors"
 												>
 													<span
-														class={`${typeIcon(d.type)} text-2xl text-primary shrink-0`}
+														class={`${typeIcon(d.type ?? "")} text-2xl text-primary shrink-0`}
 														aria-hidden="true"
 													/>
 													<div class="min-w-0 flex-1">
@@ -108,7 +108,7 @@ export function CollectionPage() {
 														</Show>
 														<div class="flex items-center gap-1 text-[11px] text-muted mt-2">
 															<span
-																class={categoryIcon(d.category)}
+																class={categoryIcon(d.category ?? "")}
 																aria-hidden="true"
 															/>
 															{d.category}

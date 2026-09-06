@@ -17,7 +17,10 @@ function buildCurl(ep: ApiEndpoint, url: string, body: string): string {
 	return lines.join(" \\\n");
 }
 
-function buildCommand(ep: ApiEndpoint, argValues: Record<string, string>): string {
+function buildCommand(
+	ep: ApiEndpoint,
+	argValues: Record<string, string>,
+): string {
 	if (!ep.cli) return `${ep.method} ${ep.path}`;
 	const parts = [ep.cli.command];
 	if (ep.cli.subcommand) parts.push(ep.cli.subcommand);
@@ -28,7 +31,10 @@ function buildCommand(ep: ApiEndpoint, argValues: Record<string, string>): strin
 	return parts.join(" ");
 }
 
-export function ApiPlayground(props: { endpoint: ApiEndpoint; style?: string }) {
+export function ApiPlayground(props: {
+	endpoint: ApiEndpoint;
+	style?: string;
+}) {
 	const ep = () => props.endpoint;
 	const style = () => props.style ?? "rest";
 
@@ -222,7 +228,11 @@ export function ApiPlayground(props: { endpoint: ApiEndpoint; style?: string }) 
 				</Show>
 
 				<Show
-					when={ep().parameters.length > 0 && style() !== "graphql" && style() !== "cli"}
+					when={
+						ep().parameters.length > 0 &&
+						style() !== "graphql" &&
+						style() !== "cli"
+					}
 				>
 					<div>
 						<p class="text-[11px] font-semibold uppercase tracking-wide text-muted m-0 mb-1.5">
@@ -250,7 +260,9 @@ export function ApiPlayground(props: { endpoint: ApiEndpoint; style?: string }) 
 					</div>
 				</Show>
 
-				<Show when={ep().requestBody && style() !== "graphql" && style() !== "cli"}>
+				<Show
+					when={ep().requestBody && style() !== "graphql" && style() !== "cli"}
+				>
 					<div>
 						<p class="text-[11px] font-semibold uppercase tracking-wide text-muted m-0 mb-1.5">
 							Body
@@ -276,7 +288,11 @@ export function ApiPlayground(props: { endpoint: ApiEndpoint; style?: string }) 
 							class={sending() ? "i-mdi:loading animate-spin" : "i-mdi:send"}
 							aria-hidden="true"
 						/>
-						{sending() ? "Sending…" : style() === "graphql" ? "Run query" : "Send request"}
+						{sending()
+							? "Sending…"
+							: style() === "graphql"
+								? "Run query"
+								: "Send request"}
 					</button>
 				</Show>
 

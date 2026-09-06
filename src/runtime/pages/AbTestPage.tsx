@@ -81,7 +81,7 @@ export function AbTestPage() {
 				</Show>
 			</div>
 			<Show when={doc()} fallback={<p class="text-muted">Loading variant…</p>}>
-				{(d) => <DocMarkdown source={d().content} />}
+				{(d) => <DocMarkdown source={d().content ?? ""} />}
 			</Show>
 		</div>
 	);

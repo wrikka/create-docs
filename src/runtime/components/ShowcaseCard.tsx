@@ -22,7 +22,7 @@ export function ShowcaseCard(props: { collection: string; doc: DocEntry }) {
 	const preview = () => {
 		if (props.doc.description) return props.doc.description;
 		const d = detail();
-		return d ? makePreview(d.content) : "";
+		return d ? makePreview(d.content ?? "") : "";
 	};
 
 	const image = () => detail()?.frontmatter?.seo?.image;

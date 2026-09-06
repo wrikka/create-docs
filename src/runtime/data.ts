@@ -57,9 +57,10 @@ export async function buildSearchIndex(
 				id: entry.id,
 				title: entry.label,
 				snippet:
-					entry.description || c.content.slice(0, 160).replace(/\s+/g, " "),
+					entry.description ||
+					(c.content ?? "").slice(0, 160).replace(/\s+/g, " "),
 				score: 0,
-				content: c.content,
+				content: c.content ?? "",
 			});
 		}
 	}

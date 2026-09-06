@@ -180,7 +180,7 @@ export function SearchPalette() {
 		async (sel) => {
 			try {
 				const c = await config.dataSource.get(sel.collection, sel.id);
-				return stripMarkdown(c.content).slice(0, 1200);
+				return stripMarkdown(c.content ?? "").slice(0, 1200);
 			} catch {
 				return "";
 			}

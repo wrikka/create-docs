@@ -50,7 +50,13 @@ export function DocPage() {
 	const [doc] = createResource(
 		() => ({ collection: collection(), id: docId() }),
 		async ({ collection, id }) => {
-			if (!collection || !id) return { content: "" };
+			if (!collection || !id)
+				return {
+					id: "",
+					label: "",
+					content: "",
+					frontmatter: {},
+				};
 			return dataSource.get(collection, id);
 		},
 	);
@@ -153,7 +159,7 @@ export function DocPage() {
 						</Show>
 					}
 				>
-					{(d) => <DocMarkdown source={d().content} />}
+					{(d) => <DocMarkdown source={d().content ?? ""} />}
 				</Show>
 				<Show when={pageLayout() === "doc"}>
 					<DocPrevNext
@@ -170,7 +176,7 @@ export function DocPage() {
 				<aside class="hidden xl:block w-56 shrink-0">
 					<div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2">
 						<Show when={showToc() && doc()}>
-							{(d) => <DocToc source={d().content} />}
+							{(d) => <DocToc source={d().content ?? ""} />}
 						</Show>
 					</div>
 				</aside>

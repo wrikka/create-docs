@@ -290,6 +290,8 @@ export function createStaticDataSource(
 				throw new Error(`Document is not published: ${id}`);
 			}
 			return {
+				id: doc.entry.id,
+				label: doc.entry.label,
 				content: doc.content,
 				frontmatter: doc.frontmatter,
 				path: doc.entry.path,
@@ -414,7 +416,7 @@ export function createCompositeDataSource(
 		},
 		async search(q: string, collection?: string): Promise<SearchResult[]> {
 			const results = await Promise.all(
-				sources.map((s) => s.search(q, collection)),
+				sources.map((s) => (s.search ? s.search(q, collection) : [])),
 			);
 			return results.flat().slice(0, 20);
 		},

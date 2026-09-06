@@ -40,7 +40,13 @@ export function EditPage() {
 	const [doc] = createResource(
 		() => ({ collection: collection(), id: docId() }),
 		async ({ collection, id }) => {
-			if (!collection || !id) return { content: "", frontmatter: {} };
+			if (!collection || !id)
+				return {
+					id: "",
+					label: "",
+					content: "",
+					frontmatter: {},
+				};
 			return dataSource.get(collection, id);
 		},
 	);
@@ -53,8 +59,8 @@ export function EditPage() {
 		const d = doc();
 		if (!d) return "";
 		const fm = d.frontmatter;
-		if (!fm || Object.keys(fm).length === 0) return d.content;
-		return `${stringifyFrontmatter(fm)}\n${d.content}`;
+		if (!fm || Object.keys(fm).length === 0) return d.content ?? "";
+		return `${stringifyFrontmatter(fm)}\n${d.content ?? ""}`;
 	};
 
 	createResource(
