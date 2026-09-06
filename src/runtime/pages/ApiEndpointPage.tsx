@@ -1,0 +1,136 @@
+import { useParams } from "@tanstack/solid-router";
+import { createMemo, Show } from "solid-js";
+import { ApiPlayground } from "../components/ApiPlayground";
+import { DocMarkdown } from "../components/DocMarkdown";
+import { DocPrevNext } from "../components/DocPrevNext";
+import { findApiCollection, useDocs } from "../context";
+import type { ApiEndpoint, DocEntry } from "../types";
+
+const METHOD_BADGE: Record<string, string> = {
+	GET: "bg-accent/15 text-accent border-accent/30",
+	POST: "bg-success/15 text-success border-success/30",
+	PUT: "bg-warning/15 text-warning border-warning/30",
+	PATCH: "bg-warning/15 text-warning border-warning/30",
+	DELETE: "bg-destructive/15 text-destructive border-destructive/30",
+};
+
+function endpointMarkdown(ep: ApiEndpoint): string {
+	const lines: string[] = [];
+	if (ep.description) lines.push(ep.description, "");
+	if (ep.parameters.length > 0) {
+		lines.push(
+			"## Parameters",
+			"",
+			"| Name | In | Required | Description |",
+			"| --- | --- | --- | --- |",
+		);
+		for (const p of ep.parameters) {
+			lines.push(
+				`| \`${p.name}\` | ${p.in} | ${p.required ? "yes" : "no"} | ${p.description ?? ""} |`,
+			);
+		}
+		lines.push("");
+	}
+	if (ep.requestBody) {
+		lines.push("## Request Body", "");
+		if (ep.requestBody.description) lines.push(ep.requestBody.description, "");
+		if (ep.requestBody.example != null) {
+			lines.push(
+				"```json",
+				JSON.stringify(ep.requestBody.example, null, 2),
+				"```",
+				"",
+			);
+		}
+	}
+	const codes = Object.keys(ep.responses);
+	if (codes.length > 0) {
+		lines.push("## Responses", "");
+		for (const code of codes) {
+			const r = ep.responses[code]!;
+			lines.push(`### ${code} — ${r.description}`);
+			if (r.example != null) {
+				lines.push(
+					"",
+					"```json",
+					JSON.stringify(r.example, null, 2),
+					"```",
+					"",
+				);
+			}
+		}
+	}
+	return lines.join("\n");
+}
+
+/** Scalar-style API reference page: endpoint detail + right-side playground. */
+export function ApiEndpointPage() {
+	const params = useParams({ strict: false });
+	const collection = () => params().collection ?? "";
+	const docId = () => params().docId ?? "";
+	const config = useDocs();
+
+	const api = createMemo(() => findApiCollection(config, collection()));
+	const endpoint = () => api()?.endpoints.find((e) => e.id === docId());
+	const entries = (): DocEntry[] =>
+		(api()?.endpoints ?? []).map((e) => ({
+			id: e.id,
+			label: e.summary ?? `${e.method} ${e.path}`,
+			category: e.tag ?? "Endpoints",
+			description: e.description ?? "",
+			path: e.path,
+			type: "api",
+		}));
+
+	return (
+		<div class="flex gap-8 max-w-7xl mx-auto px-6 py-8">
+			<article class="flex-1 min-w-0">
+				<Show
+					when={endpoint()}
+					fallback={<p class="text-muted text-sm">Endpoint not found.</p>}
+				>
+					{(ep) => (
+						<>
+							<div class="flex items-center gap-2 pb-4 mb-4 border-b border-border">
+								<span
+									class={`inline-flex items-center px-2.5 py-1 rounded-md border text-xs font-bold ${METHOD_BADGE[ep().method] ?? ""}`}
+								>
+									{ep().method}
+								</span>
+								<code class="text-sm font-mono text-foreground">
+									{ep().path}
+								</code>
+								<Show when={ep().tag}>
+									<span class="ml-auto text-[11px] uppercase tracking-wide text-muted">
+										{ep().tag}
+									</span>
+								</Show>
+							</div>
+							<Show when={ep().summary}>
+								<h1 class="text-2xl font-bold text-foreground mt-0 mb-4">
+									{ep().summary}
+								</h1>
+							</Show>
+							<DocMarkdown source={endpointMarkdown(ep())} />
+						</>
+					)}
+				</Show>
+				<DocPrevNext
+					collection={collection()}
+					docs={entries()}
+					currentId={docId()}
+				/>
+			</article>
+			<aside class="hidden lg:block w-96 shrink-0">
+				<div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+					<p class="text-[11px] font-semibold uppercase tracking-wide text-muted m-0 mb-2">
+						Try it
+					</p>
+					<Show when={endpoint()}>
+						{(ep) => <ApiPlayground endpoint={ep()} />}
+					</Show>
+				</div>
+			</aside>
+		</div>
+	);
+}

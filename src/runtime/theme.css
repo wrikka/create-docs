@@ -1,0 +1,113 @@
+:root {
+	/* Design tokens — light mode (HSL) */
+	--color-primary: 142 60% 45%;
+	--color-primary-hover: 142 60% 38%;
+	--color-primary-active: 142 60% 32%;
+	--color-primary-foreground: 0 0% 100%;
+	--color-secondary: 217 91% 60%;
+	--color-success: 142 76% 36%;
+	--color-warning: 38 92% 45%;
+	--color-destructive: 0 84% 55%;
+	--color-background: 0 0% 100%;
+	--color-foreground: 222 20% 12%;
+	--color-surface: 220 14% 96%;
+	--color-muted: 220 9% 46%;
+	--color-accent: 217 91% 55%;
+	--color-border: 220 13% 88%;
+	--color-focus: 142 60% 45%;
+	--color-overlay: 222 20% 12% / 0.4;
+	--color-skeleton: 220 13% 91%;
+
+	/* Legacy content vars — light */
+	--rt-bg: #f6f8fa;
+	--rt-bg-alt: #eef1f5;
+	--rt-panel: #ffffff;
+	--rt-border: #d9dee6;
+	--rt-border-focus: #2ea043;
+	--rt-fg: #1c2330;
+	--rt-fg-dim: #5b6577;
+	--rt-accent: #2ea043;
+	--rt-accent-2: #1f6feb;
+	--rt-warn: #9a6700;
+	--rt-danger: #cf222e;
+	--rt-shadow: 0 4px 24px rgba(28, 35, 48, 0.12);
+	--rt-radius: 8px;
+	--rt-font-mono:
+		"Cascadia Code", "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo,
+		Consolas, monospace;
+	color-scheme: light;
+}
+
+.dark {
+	/* Design tokens — dark mode (HSL) */
+	--color-primary: 140 60% 66%;
+	--color-primary-hover: 140 60% 58%;
+	--color-primary-active: 140 60% 50%;
+	--color-primary-foreground: 222 47% 6%;
+	--color-secondary: 207 100% 67%;
+	--color-success: 142 76% 45%;
+	--color-warning: 43 90% 59%;
+	--color-destructive: 0 100% 71%;
+	--color-background: 222 33% 5%;
+	--color-foreground: 214 22% 92%;
+	--color-surface: 220 26% 10%;
+	--color-muted: 220 12% 60%;
+	--color-accent: 207 100% 67%;
+	--color-border: 220 18% 19%;
+	--color-focus: 140 60% 66%;
+	--color-overlay: 0 0% 0% / 0.55;
+	--color-skeleton: 220 15% 18%;
+
+	/* Legacy content vars — dark */
+	--rt-bg: #080a0f;
+	--rt-bg-alt: #0d1016;
+	--rt-panel: #0f1319;
+	--rt-border: #232a36;
+	--rt-border-focus: #7ee787;
+	--rt-fg: #e3e8ef;
+	--rt-fg-dim: #8b95a7;
+	--rt-accent: #7ee787;
+	--rt-accent-2: #56b6ff;
+	--rt-warn: #f2c14e;
+	--rt-danger: #ff6b6b;
+	--rt-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+	color-scheme: dark;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	background: hsl(var(--color-background));
+	color: hsl(var(--color-foreground));
+	font-family:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica,
+		Arial, sans-serif;
+	line-height: 1.6;
+	transition:
+		background 0.15s ease,
+		color 0.15s ease;
+}
+
+#root {
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+a {
+	color: hsl(var(--color-accent));
+}
+
+button {
+	font-family: inherit;
+}
+
+:focus-visible {
+	outline: 2px solid hsl(var(--color-focus));
+	outline-offset: 2px;
+}

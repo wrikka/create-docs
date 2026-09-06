@@ -1,0 +1,18 @@
+{
+	"$schema": "../../../node_modules/@biomejs/biome/configuration_schema.json",
+	"root": false,
+	"extends": ["../../../biome.jsonc"],
+	"linter": {
+		"rules": {
+			"a11y": {
+				"noStaticElementInteractions": "off",
+				"noNoninteractiveElementToInteractiveRole": "off",
+				"useFocusableInteractive": "off",
+				"useAnchorContent": "off"
+			},
+			"correctness": {
+				"useHookAtTopLevel": "off"
+			}
+		}
+	}
+}
