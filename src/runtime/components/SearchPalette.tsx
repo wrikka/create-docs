@@ -7,13 +7,19 @@ import {
 	Show,
 } from "solid-js";
 import { useDocs } from "../context";
-import { setTheme, useTheme } from "../theme";
 import { searchDocs, useCollections } from "../data";
+import { setTheme, useTheme } from "../theme";
 
 export const [searchOpen, setSearchOpen] = createSignal(false);
 
 type SearchItem =
-	| { type: "doc"; collection: string; id: string; title: string; snippet?: string }
+	| {
+			type: "doc";
+			collection: string;
+			id: string;
+			title: string;
+			snippet?: string;
+	  }
 	| { type: "cmd"; id: string; title: string; icon: string; run: () => void };
 
 export function SearchPalette() {
@@ -80,8 +86,13 @@ export function SearchPalette() {
 	const filteredCommands = (): SearchItem[] => {
 		const q = query().trim().toLowerCase();
 		if (!q) return commands();
-		if (q.startsWith(">")) return commands().filter((c) => c.type === "cmd" && c.title.toLowerCase().includes(q.slice(1)));
-		return commands().filter((c) => c.type === "cmd" && c.title.toLowerCase().includes(q));
+		if (q.startsWith(">"))
+			return commands().filter(
+				(c) => c.type === "cmd" && c.title.toLowerCase().includes(q.slice(1)),
+			);
+		return commands().filter(
+			(c) => c.type === "cmd" && c.title.toLowerCase().includes(q),
+		);
 	};
 
 	const docItems = (): SearchItem[] =>
@@ -168,7 +179,9 @@ export function SearchPalette() {
 					</div>
 					<div class="max-h-80 overflow-y-auto">
 						<Show when={results.loading}>
-							<div class="px-4 py-6 text-sm text-muted text-center">Searching…</div>
+							<div class="px-4 py-6 text-sm text-muted text-center">
+								Searching…
+							</div>
 						</Show>
 						<Show
 							when={
@@ -203,7 +216,8 @@ export function SearchPalette() {
 												</span>
 												<Show when={item.type === "doc"}>
 													<span class="ml-auto text-[10px] uppercase tracking-wide text-muted shrink-0">
-														{item.type === "doc" && collectionLabel(item.collection)}
+														{item.type === "doc" &&
+															collectionLabel(item.collection)}
 													</span>
 												</Show>
 											</div>

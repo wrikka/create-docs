@@ -12,7 +12,8 @@ const blocks: Block[] = [
 	{
 		id: "features",
 		label: "Feature grid",
-		markdown: () => `<card-grid>\n<card title="Fast" icon="i-mdi:lightning-bolt">Fast docs</card>\n<card title="Pluggable" icon="i-mdi:puzzle">Pluggable data sources</card>\n</card-grid>`,
+		markdown: () =>
+			`<card-grid>\n<card title="Fast" icon="i-mdi:lightning-bolt">Fast docs</card>\n<card title="Pluggable" icon="i-mdi:puzzle">Pluggable data sources</card>\n</card-grid>`,
 	},
 	{
 		id: "code",
@@ -48,7 +49,8 @@ export function BuilderPage() {
 		setActive(arr);
 	};
 
-	const remove = (i: number) => setActive(active().filter((_, idx) => idx !== i));
+	const remove = (i: number) =>
+		setActive(active().filter((_, idx) => idx !== i));
 	const add = (id: string) => setActive([...active(), id]);
 
 	const copy = async () => {
@@ -59,7 +61,9 @@ export function BuilderPage() {
 
 	return (
 		<div class="max-w-6xl mx-auto px-6 py-8">
-			<h1 class="text-2xl font-semibold text-foreground mb-6">Visual Page Builder</h1>
+			<h1 class="text-2xl font-semibold text-foreground mb-6">
+				Visual Page Builder
+			</h1>
 			<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 				<div class="space-y-4">
 					<div class="p-4 rounded-md border border-border bg-surface">
@@ -72,7 +76,9 @@ export function BuilderPage() {
 						/>
 					</div>
 					<div class="p-4 rounded-md border border-border bg-surface">
-						<div class="text-sm font-medium text-foreground mb-2">Add blocks</div>
+						<div class="text-sm font-medium text-foreground mb-2">
+							Add blocks
+						</div>
 						<div class="flex flex-wrap gap-2">
 							<For each={blocks}>
 								{(b) => (
@@ -91,10 +97,13 @@ export function BuilderPage() {
 						<div class="text-sm font-medium text-foreground mb-2">Blocks</div>
 						<For each={active()}>
 							{(id, i) => {
-								const label = () => blocks.find((b) => b.id === id)?.label ?? id;
+								const label = () =>
+									blocks.find((b) => b.id === id)?.label ?? id;
 								return (
 									<div class="flex items-center gap-2 py-1.5">
-										<span class="text-sm text-foreground flex-1">{label()}</span>
+										<span class="text-sm text-foreground flex-1">
+											{label()}
+										</span>
 										<button
 											type="button"
 											onClick={() => move(i(), -1)}

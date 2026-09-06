@@ -1,6 +1,7 @@
 import { createResource, For, Show } from "solid-js";
+import { SkeletonPage } from "../components/Skeleton";
 import { useDocs } from "../context";
-import { fetchReleases } from "../github";
+import { fetchReleases, GitHubFetchError } from "../github";
 
 function formatDate(iso: string) {
 	try {
@@ -35,22 +36,76 @@ export function ChangelogPage() {
 		return escaped.replace(/\r\n/g, "\n").replace(/\n/g, "<br />");
 	};
 
+	const errorMessage = () => {
+		const err = releases.error as GitHubFetchError | Error | undefined;
+		if (!err) return "";
+		if (err instanceof GitHubFetchError) {
+			return err.status === 404
+				? "Releases not found. Make sure the repository is public."
+				: `${err.message}: ${err.payload ?? ""}`.slice(0, 200);
+		}
+		return err.message;
+	};
+
 	return (
 		<div class="max-w-3xl mx-auto px-6 py-8">
 			<h1 class="text-3xl font-bold mb-2">Changelog</h1>
 			<p class="text-muted mb-8">Releases from GitHub</p>
+
 			<Show when={releases.loading}>
-				<p class="text-muted">Loading releases…</p>
+				<SkeletonPage />
 			</Show>
-			<Show when={!releases.loading && (releases() ?? []).length === 0}>
-				<p class="text-muted">No releases found.</p>
+
+			<Show when={!releases.loading && errorMessage()}>
+				<div class="border border-destructive/30 bg-destructive/10 rounded-lg p-5 mb-6">
+					<div class="flex items-center gap-2 mb-1 text-destructive font-medium">
+						<span class="i-mdi:alert-circle" aria-hidden="true" />
+						Failed to load releases
+					</div>
+					<p class="text-sm text-destructive/90 mb-3">{errorMessage()}</p>
+					<Show when={config.site.repoUrl}>
+						<a
+							href={`${config.site.repoUrl}/releases`}
+							target="_blank"
+							rel="noreferrer"
+							class="inline-flex items-center gap-1.5 text-sm text-destructive font-medium underline underline-offset-2"
+						>
+							View on GitHub
+							<span class="i-mdi:open-in-new" aria-hidden="true" />
+						</a>
+					</Show>
+				</div>
 			</Show>
+
+			<Show
+				when={
+					!releases.loading &&
+					!releases.error &&
+					(releases() ?? []).length === 0
+				}
+			>
+				<div class="flex flex-col items-center gap-3 py-16 rounded-lg border border-dashed border-border text-muted">
+					<span class="i-mdi:history text-4xl" aria-hidden="true" />
+					<p class="m-0">No releases found for this repository.</p>
+					<Show when={config.site.repoUrl}>
+						<a
+							href={`${config.site.repoUrl}/releases/new`}
+							target="_blank"
+							rel="noreferrer"
+							class="text-sm text-primary underline underline-offset-2"
+						>
+							Create a release
+						</a>
+					</Show>
+				</div>
+			</Show>
+
 			<div class="space-y-6">
 				<For each={releases() ?? []}>
 					{(release) => (
-						<article class="border border-border rounded-lg p-5">
+						<article class="border border-border rounded-lg p-5 bg-surface/30 hover:border-focus transition-colors">
 							<div class="flex items-center gap-2 mb-2">
-								<h2 class="text-xl font-semibold">
+								<h2 class="text-xl font-semibold m-0">
 									<a
 										href={release.html_url}
 										target="_blank"

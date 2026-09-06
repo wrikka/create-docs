@@ -17,6 +17,7 @@ import { BuilderPage } from "./pages/BuilderPage";
 import { ChangelogPage } from "./pages/ChangelogPage";
 import { CollectionPage } from "./pages/CollectionPage";
 import { CommunityPage } from "./pages/CommunityPage";
+import { CreatePage } from "./pages/CreatePage";
 import { DocPage } from "./pages/DocPage";
 import { EditPage } from "./pages/EditPage";
 import { HomePage } from "./pages/HomePage";
@@ -71,6 +72,12 @@ export function createDocsRouter(config: DocsAppConfig) {
 				<DocPage />
 			);
 		},
+	});
+
+	const createPageRoute = createRoute({
+		getParentRoute: () => rootRoute,
+		path: "create",
+		component: CreatePage,
 	});
 
 	const builderRoute = createRoute({
@@ -133,12 +140,13 @@ export function createDocsRouter(config: DocsAppConfig) {
 
 	const routeTree = rootRoute.addChildren([
 		indexRoute,
-		collectionRoute,
-		detailRoute,
+		createPageRoute,
 		editRoute,
 		builderRoute,
 		abTestRoute,
 		...extraRoutes,
+		collectionRoute,
+		detailRoute,
 	]);
 
 	const router = createRouter({

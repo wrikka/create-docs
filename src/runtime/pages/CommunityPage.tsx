@@ -1,7 +1,13 @@
 import { createResource, For, Show } from "solid-js";
+import { SkeletonPage } from "../components/Skeleton";
 import type { GitHubConfig } from "../config";
 import { useDocs } from "../context";
-import { fetchCommits, fetchContributors, fetchMilestones } from "../github";
+import {
+	fetchCommits,
+	fetchContributors,
+	fetchMilestones,
+	GitHubFetchError,
+} from "../github";
 
 function formatDate(iso: string | null) {
 	if (!iso) return null;
@@ -16,37 +22,96 @@ function formatDate(iso: string | null) {
 	}
 }
 
+function errorText(err: unknown): string {
+	if (err instanceof GitHubFetchError) {
+		return err.status === 404
+			? "Repository not found or not public."
+			: err.status === 403
+				? "GitHub rate limit exceeded. Try again later."
+				: `${err.message}: ${err.payload ?? ""}`.slice(0, 200);
+	}
+	if (err instanceof Error) return err.message;
+	return "Could not load data from GitHub.";
+}
+
 export function CommunityPage() {
 	const config = useDocs();
 	const github = () =>
 		config.github?.contributors ? (config.github as GitHubConfig) : undefined;
 
 	const [contributors] = createResource(github, (cfg) =>
-		fetchContributors(cfg).catch(() => []),
+		fetchContributors(cfg),
 	);
 	const [commits] = createResource(github, (cfg) =>
-		fetchCommits(cfg, cfg.branch).catch(() => []),
+		fetchCommits(cfg, cfg.branch),
 	);
-	const [milestones] = createResource(github, (cfg) =>
-		fetchMilestones(cfg).catch(() => []),
+	const [milestones] = createResource(github, (cfg) => fetchMilestones(cfg));
+
+	const anyError = () =>
+		contributors.error || commits.error || milestones.error;
+	const firstError = () =>
+		errorText(contributors.error ?? commits.error ?? milestones.error);
+
+	const errorFor = (err: unknown) => (
+		<div class="border border-destructive/30 bg-destructive/10 rounded-lg p-4">
+			<div class="flex items-center gap-2 text-destructive font-medium text-sm">
+				<span class="i-mdi:alert-circle" aria-hidden="true" />
+				{errorText(err)}
+			</div>
+		</div>
 	);
 
 	return (
-		<div class="max-w-4xl mx-auto px-6 py-8">
+		<div class="max-w-4xl mx-auto px-6 py-8 pb-24">
 			<h1 class="text-3xl font-bold mb-2">Community</h1>
 			<p class="text-muted mb-8">
 				Contributors, recent activity, and project milestones
 			</p>
 
+			<Show
+				when={contributors.loading && commits.loading && milestones.loading}
+			>
+				<SkeletonPage />
+			</Show>
+
+			<Show when={!contributors.loading && !commits.loading && anyError()}>
+				<div class="mb-8 border border-destructive/30 bg-destructive/10 rounded-lg p-5">
+					<div class="flex items-center gap-2 mb-1 text-destructive font-medium">
+						<span class="i-mdi:alert-circle" aria-hidden="true" />
+						Could not load community data
+					</div>
+					<p class="text-sm text-destructive/90 mb-3">{firstError()}</p>
+					<Show when={config.site.repoUrl}>
+						<a
+							href={config.site.repoUrl}
+							target="_blank"
+							rel="noreferrer"
+							class="inline-flex items-center gap-1.5 text-sm text-destructive font-medium underline underline-offset-2"
+						>
+							View on GitHub
+							<span class="i-mdi:open-in-new" aria-hidden="true" />
+						</a>
+					</Show>
+				</div>
+			</Show>
+
 			<section class="mb-12">
-				<h2 class="text-xl font-semibold mb-4">Contributors</h2>
-				<Show when={contributors.loading}>
-					<p class="text-muted">Loading contributors…</p>
-				</Show>
+				<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+					<span class="i-mdi:account-group" aria-hidden="true" />
+					Contributors
+				</h2>
+				<Show when={contributors.error}>{errorFor(contributors.error)}</Show>
 				<Show
-					when={!contributors.loading && (contributors() ?? []).length === 0}
+					when={
+						!contributors.loading &&
+						!contributors.error &&
+						(contributors() ?? []).length === 0
+					}
 				>
-					<p class="text-muted">No contributors found.</p>
+					<div class="flex flex-col items-center gap-2 py-12 rounded-lg border border-dashed border-border text-muted">
+						<span class="i-mdi:account-question text-4xl" aria-hidden="true" />
+						<p class="m-0">No contributors found.</p>
+					</div>
 				</Show>
 				<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
 					<For each={contributors() ?? []}>
@@ -55,7 +120,7 @@ export function CommunityPage() {
 								href={c.html_url}
 								target="_blank"
 								rel="noreferrer"
-								class="flex items-center gap-3 border border-border rounded-lg p-3 hover:border-primary transition-colors"
+								class="flex items-center gap-3 border border-border rounded-lg p-3 hover:border-primary transition-colors bg-surface/30"
 							>
 								<img
 									src={c.avatar_url}
@@ -77,9 +142,13 @@ export function CommunityPage() {
 				</div>
 			</section>
 
-			<Show when={(milestones() ?? []).length > 0}>
+			<Show when={(milestones() ?? []).length > 0 || milestones.error}>
 				<section class="mb-12">
-					<h2 class="text-xl font-semibold mb-4">Milestones</h2>
+					<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+						<span class="i-mdi:flag-checkered" aria-hidden="true" />
+						Milestones
+					</h2>
+					<Show when={milestones.error}>{errorFor(milestones.error)}</Show>
 					<div class="space-y-3">
 						<For each={milestones() ?? []}>
 							{(m) => {
@@ -89,7 +158,7 @@ export function CommunityPage() {
 										? 0
 										: Math.round((m.closed_issues / total()) * 100);
 								return (
-									<div class="border border-border rounded-lg p-4">
+									<div class="border border-border rounded-lg p-4 bg-surface/30">
 										<div class="flex items-center gap-2 mb-1">
 											<a
 												href={m.html_url}
@@ -102,8 +171,8 @@ export function CommunityPage() {
 											<span
 												class={`text-xs px-2 py-0.5 rounded-full ${
 													m.state === "open"
-														? "bg-emerald-500/15 text-emerald-500"
-														: "bg-gray-500/15 text-gray-500"
+														? "bg-primary/15 text-primary"
+														: "bg-muted/20 text-muted"
 												}`}
 											>
 												{m.state}
@@ -142,17 +211,25 @@ export function CommunityPage() {
 			</Show>
 
 			<section>
-				<h2 class="text-xl font-semibold mb-4">Recent commits</h2>
-				<Show when={commits.loading}>
-					<p class="text-muted">Loading commits…</p>
-				</Show>
-				<Show when={!commits.loading && (commits() ?? []).length === 0}>
-					<p class="text-muted">No commits found.</p>
+				<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+					<span class="i-mdi:source-commit" aria-hidden="true" />
+					Recent commits
+				</h2>
+				<Show when={commits.error}>{errorFor(commits.error)}</Show>
+				<Show
+					when={
+						!commits.loading && !commits.error && (commits() ?? []).length === 0
+					}
+				>
+					<div class="flex flex-col items-center gap-2 py-12 rounded-lg border border-dashed border-border text-muted">
+						<span class="i-mdi:source-branch text-4xl" aria-hidden="true" />
+						<p class="m-0">No commits found.</p>
+					</div>
 				</Show>
 				<ul class="space-y-2">
 					<For each={commits() ?? []}>
 						{(c) => (
-							<li class="flex items-baseline gap-3 border border-border rounded-lg px-4 py-2">
+							<li class="flex items-baseline gap-3 border border-border rounded-lg px-4 py-2 bg-surface/30">
 								<code class="text-xs text-primary shrink-0">{c.sha}</code>
 								<a
 									href={c.html_url}

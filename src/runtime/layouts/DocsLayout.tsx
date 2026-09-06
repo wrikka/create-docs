@@ -4,6 +4,7 @@ import { BackToTop } from "../components/BackToTop";
 import { Banner } from "../components/Banner";
 import { Footer } from "../components/Footer";
 import { Head } from "../components/Head";
+import { MobileBottomNav } from "../components/MobileBottomNav";
 import { ScrollProgress } from "../components/ScrollProgress";
 import { SearchPalette, setSearchOpen } from "../components/SearchPalette";
 import { SidebarNav } from "../components/SidebarNav";
@@ -109,10 +110,13 @@ export function DocsLayout() {
 						onClick={() => setNavOpen(false)}
 					/>
 				</Show>
-				<main class={`flex-1 min-w-0 ${inCollection() ? "lg:pl-72" : ""}`}>
+				<main
+					class={`flex-1 min-w-0 pb-16 lg:pb-0 ${inCollection() ? "lg:pl-72" : ""}`}
+				>
 					<Outlet />
 				</main>
 			</div>
+			<MobileBottomNav onMenuToggle={() => setNavOpen(!navOpen())} />
 			<Footer />
 			<SearchPalette />
 			<BackToTop />

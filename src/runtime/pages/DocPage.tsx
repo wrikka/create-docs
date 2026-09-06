@@ -1,4 +1,5 @@
 import { useParams } from "@tanstack/solid-router";
+import { dump as dumpYaml } from "js-yaml";
 import { createResource, createSignal, Show } from "solid-js";
 import { AskAiDialog } from "../components/AskAiDialog";
 import { Breadcrumbs } from "../components/Breadcrumbs";
@@ -24,11 +25,20 @@ function formatLastUpdated(iso?: string) {
 	}
 }
 
+function formatFrontmatter(value: unknown) {
+	try {
+		return dumpYaml(value, { indent: 2 } as import("js-yaml").DumpOptions);
+	} catch {
+		return JSON.stringify(value, null, 2);
+	}
+}
+
 export function DocPage() {
 	const params = useParams({ strict: false });
 	const collection = () => params().collection ?? "";
 	const docId = () => params().docId ?? "";
 	const [askOpen, setAskOpen] = createSignal(false);
+	const [fmOpen, setFmOpen] = createSignal(false);
 	const config = useDocs();
 	const dataSource = useDocs().dataSource;
 	const showBreadcrumbs = () => config.features?.breadcrumbs !== false;
@@ -46,6 +56,10 @@ export function DocPage() {
 	);
 
 	const frontmatter = () => doc()?.frontmatter;
+	const showFrontmatterToggle = () =>
+		config.features?.frontmatterToggle !== false &&
+		frontmatter() &&
+		Object.keys(frontmatter()!).length > 0;
 
 	const pageLayout = () => frontmatter()?.layout ?? "doc";
 	const showToc = () =>
@@ -88,6 +102,23 @@ export function DocPage() {
 									<span class="i-mdi:robot-happy-outline" aria-hidden="true" />
 									Ask AI
 								</button>
+								<Show when={showFrontmatterToggle()}>
+									<button
+										type="button"
+										onClick={() => setFmOpen(!fmOpen())}
+										class={`inline-flex items-center gap-1.5 px-2.5 h-8 rounded-md border text-xs transition-colors cursor-pointer bg-transparent ${
+											fmOpen()
+												? "border-primary text-primary bg-primary/10"
+												: "border-border text-muted hover:text-foreground hover:bg-surface"
+										}`}
+									>
+										<span
+											class={fmOpen() ? "i-mdi:eye-off" : "i-mdi:eye"}
+											aria-hidden="true"
+										/>
+										{fmOpen() ? "Hide frontmatter" : "Show frontmatter"}
+									</button>
+								</Show>
 								<span class="ml-auto inline-flex items-center gap-1.5 text-xs text-muted min-w-0">
 									<span class="i-mdi:folder-open-outline" aria-hidden="true" />
 									<code class="font-mono truncate">{m().path}</code>
@@ -99,6 +130,19 @@ export function DocPage() {
 								</div>
 							</Show>
 						</>
+					)}
+				</Show>
+				<Show when={fmOpen() && frontmatter()}>
+					{(f) => (
+						<div class="mb-4 border border-border rounded-lg overflow-hidden bg-surface/50">
+							<div class="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted border-b border-border bg-surface">
+								<span class="i-mdi:code-json" aria-hidden="true" />
+								Frontmatter
+							</div>
+							<pre class="text-xs text-foreground p-3 m-0 overflow-x-auto whitespace-pre-wrap break-all font-mono">
+								{formatFrontmatter(f())}
+							</pre>
+						</div>
 					)}
 				</Show>
 				<Show
@@ -124,7 +168,7 @@ export function DocPage() {
 			</article>
 			<Show when={showAside()}>
 				<aside class="hidden xl:block w-56 shrink-0">
-					<div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto">
+					<div class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pr-2">
 						<Show when={showToc() && doc()}>
 							{(d) => <DocToc source={d().content} />}
 						</Show>

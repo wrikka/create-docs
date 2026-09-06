@@ -24,7 +24,9 @@ export function AbTestPage() {
 			try {
 				return await dataSource.get(collection, id);
 			} catch {
-				return { content: `> Variant ${v().toUpperCase()} not found for **${baseId()}**.\n\nCreate \`${baseId()}-a.md\` and \`${baseId()}-b.md\`.` };
+				return {
+					content: `> Variant ${v().toUpperCase()} not found for **${baseId()}**.\n\nCreate \`${baseId()}-a.md\` and \`${baseId()}-b.md\`.`,
+				};
 			}
 		},
 	);

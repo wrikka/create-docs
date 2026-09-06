@@ -39,6 +39,8 @@ export interface DocsAppFeatures {
 	pwa?: boolean;
 	/** Local page-view analytics + /analytics dashboard. */
 	analytics?: boolean;
+	/** Show a toggle to reveal/hide the document frontmatter on doc pages. */
+	frontmatterToggle?: boolean;
 }
 
 export interface MarkdownConfig {
@@ -105,6 +107,7 @@ export interface GitHubConfig {
 export interface SiteLink {
 	label: string;
 	to: string;
+	icon?: string;
 }
 
 export interface FooterConfig {

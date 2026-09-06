@@ -1,16 +1,60 @@
 interface Env {
 	ASSETS: { fetch: (req: Request) => Promise<Response> };
-	AI: { run: (model: string, input: Record<string, unknown>) => Promise<{ response?: string }> };
+	AI: {
+		run: (
+			model: string,
+			input: Record<string, unknown>,
+		) => Promise<{ response?: string }>;
+	};
 	GITHUB_TOKEN?: string;
+}
+
+async function handleGitHubProxy(
+	request: Request,
+	env: Env,
+): Promise<Response> {
+	const url = new URL(request.url);
+	const path = url.pathname.slice("/api/github".length) + url.search;
+	const headers: Record<string, string> = {
+		Accept: "application/vnd.github+json",
+		"X-GitHub-Api-Version": "2022-11-28",
+	};
+	if (env.GITHUB_TOKEN) {
+		headers.Authorization = `Bearer ${env.GITHUB_TOKEN}`;
+	}
+	try {
+		const res = await fetch(`https://api.github.com${path}`, {
+			method: request.method,
+			headers,
+			body:
+				request.method === "GET" || request.method === "HEAD"
+					? undefined
+					: request.body,
+		});
+		return new Response(res.body, {
+			status: res.status,
+			headers: {
+				"Content-Type": res.headers.get("Content-Type") ?? "application/json",
+				"Cache-Control": "public, max-age=60",
+			},
+		});
+	} catch (e) {
+		const message = e instanceof Error ? e.message : "GitHub proxy error";
+		return new Response(JSON.stringify({ error: message }), { status: 502 });
+	}
 }
 
 async function handleAi(request: Request, env: Env): Promise<Response> {
 	if (request.method !== "POST") {
 		return new Response("Method not allowed", { status: 405 });
 	}
-	const { prompt } = (await request.json().catch(() => ({}))) as { prompt?: string };
+	const { prompt } = (await request.json().catch(() => ({}))) as {
+		prompt?: string;
+	};
 	if (!prompt) {
-		return new Response(JSON.stringify({ error: "Missing prompt" }), { status: 400 });
+		return new Response(JSON.stringify({ error: "Missing prompt" }), {
+			status: 400,
+		});
 	}
 	try {
 		const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct-fast", {
@@ -30,11 +74,23 @@ async function handleSave(request: Request, env: Env): Promise<Response> {
 		return new Response("Method not allowed", { status: 405 });
 	}
 	if (!env.GITHUB_TOKEN) {
-		return new Response(JSON.stringify({ error: "GITHUB_TOKEN not configured" }), { status: 503 });
+		return new Response(
+			JSON.stringify({ error: "GITHUB_TOKEN not configured" }),
+			{ status: 503 },
+		);
 	}
-	const { owner, repo, path: filePath, content, branch = "main", message } = (await request.json().catch(() => ({}))) as Record<string, string>;
+	const {
+		owner,
+		repo,
+		path: filePath,
+		content,
+		branch = "main",
+		message,
+	} = (await request.json().catch(() => ({}))) as Record<string, string>;
 	if (!owner || !repo || !filePath || !content || !message) {
-		return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
+		return new Response(JSON.stringify({ error: "Missing required fields" }), {
+			status: 400,
+		});
 	}
 
 	try {
@@ -48,7 +104,9 @@ async function handleSave(request: Request, env: Env): Promise<Response> {
 				},
 			},
 		);
-		const existing = getRes.ok ? (await getRes.json()) as { sha: string } : null;
+		const existing = getRes.ok
+			? ((await getRes.json()) as { sha: string })
+			: null;
 
 		const body = JSON.stringify({
 			message,
@@ -73,7 +131,9 @@ async function handleSave(request: Request, env: Env): Promise<Response> {
 
 		if (!putRes.ok) {
 			const text = await putRes.text();
-			return new Response(JSON.stringify({ error: text }), { status: putRes.status });
+			return new Response(JSON.stringify({ error: text }), {
+				status: putRes.status,
+			});
 		}
 
 		return new Response(JSON.stringify({ ok: true }), {
@@ -94,6 +154,9 @@ export default {
 			}
 			if (url.pathname === "/api/content/save") {
 				return handleSave(request, env);
+			}
+			if (url.pathname.startsWith("/api/github")) {
+				return handleGitHubProxy(request, env);
 			}
 			return await env.ASSETS.fetch(request);
 		} catch (e) {

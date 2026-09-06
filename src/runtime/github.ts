@@ -32,16 +32,43 @@ export interface CommitInfo {
 	html_url: string;
 }
 
+function githubBaseUrl(): string {
+	// In production builds, use the Cloudflare Worker proxy so a GITHUB_TOKEN
+	// can be attached server-side. In dev, call the GitHub API directly.
+	return import.meta.env.PROD ? "/api/github" : "https://api.github.com";
+}
+
 export function githubApiUrl(config: GitHubConfig, path: string): string {
-	return `https://api.github.com/repos/${config.owner}/${config.repo}${path}`;
+	return `${githubBaseUrl()}/repos/${config.owner}/${config.repo}${path}`;
+}
+
+export class GitHubFetchError extends Error {
+	status: number;
+	payload?: string;
+	constructor(status: number, message: string, payload?: string) {
+		super(message);
+		this.status = status;
+		this.payload = payload;
+	}
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
 	const res = await fetch(url, {
 		headers: { Accept: "application/vnd.github+json" },
 	});
-	if (!res.ok) throw new Error(`GitHub API error ${res.status}`);
-	return res.json() as Promise<T>;
+	const text = await res.text();
+	if (!res.ok) {
+		throw new GitHubFetchError(
+			res.status,
+			`GitHub API error ${res.status}`,
+			text,
+		);
+	}
+	try {
+		return JSON.parse(text) as T;
+	} catch {
+		throw new GitHubFetchError(res.status, "Invalid JSON from GitHub", text);
+	}
 }
 
 export async function fetchReleases(
@@ -60,7 +87,7 @@ export async function fetchRepoStats(config: GitHubConfig): Promise<RepoStats> {
 			open_issues_count: number;
 		}>(githubApiUrl(config, "")),
 		fetchJson<{ total_count: number }>(
-			`https://api.github.com/search/issues?q=repo:${config.owner}/${config.repo}+type:pr+state:open&per_page=1`,
+			`${githubBaseUrl()}/search/issues?q=repo:${config.owner}/${config.repo}+type:pr+state:open&per_page=1`,
 		),
 	]);
 	return {

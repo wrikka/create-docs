@@ -79,7 +79,10 @@ function LogoContextMenu(props: {
 	);
 }
 
-export function TopNav(props: { onMenuToggle: () => void }) {
+export function TopNav(props: {
+	onMenuToggle: () => void;
+	onCreateClick?: () => void;
+}) {
 	const params = useParams({ strict: false });
 	const config = useDocs();
 	const [menu, setMenu] = createSignal<{ open: boolean; x: number; y: number }>(
@@ -92,6 +95,19 @@ export function TopNav(props: { onMenuToggle: () => void }) {
 			string,
 		][];
 	const topNav = () => config.topNav ?? [];
+	const extraNav = () => [
+		...(config.github?.releases
+			? [{ label: "Changelog", to: "/changelog", icon: "i-mdi:history" }]
+			: []),
+		...(config.github?.contributors
+			? [{ label: "Community", to: "/community", icon: "i-mdi:account-group" }]
+			: []),
+		...(config.plugins?.length
+			? [{ label: "Plugins", to: "/plugins", icon: "i-mdi:puzzle" }]
+			: []),
+	];
+
+	const allNav = () => [...topNav(), ...extraNav()];
 
 	const logoIcon = () => config.site.logo ?? "i-mdi:book-open-page-variant";
 
@@ -107,7 +123,7 @@ export function TopNav(props: { onMenuToggle: () => void }) {
 			</button>
 			<Link
 				to="/"
-				class="inline-flex items-center gap-2 no-underline text-foreground font-semibold text-sm"
+				class="inline-flex items-center gap-2 no-underline text-foreground font-semibold text-sm shrink-0"
 				onContextMenu={(e) => {
 					e.preventDefault();
 					setMenu({ open: true, x: e.clientX, y: e.clientY });
@@ -116,88 +132,83 @@ export function TopNav(props: { onMenuToggle: () => void }) {
 				<span class={`${logoIcon()} text-primary text-lg`} aria-hidden="true" />
 				{config.site.title}
 			</Link>
-			<div class="w-px h-6 bg-border hidden sm:block" aria-hidden="true" />
+			<div
+				class="w-px h-6 bg-border hidden sm:block shrink-0"
+				aria-hidden="true"
+			/>
 			<CollectionDropdown current={params().collection} />
-			<nav class="hidden md:flex items-center gap-1 ml-2" aria-label="Site">
-				<For each={topNav()}>
+
+			<nav
+				class="hidden md:flex flex-1 items-center justify-center gap-1"
+				aria-label="Site"
+			>
+				<For each={allNav()}>
 					{(link) => (
 						<Link
 							to={link.to}
-							class="px-3 h-9 inline-flex items-center rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
+							class="px-3 h-9 inline-flex items-center gap-1.5 rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
 						>
+							<Show when={link.icon}>
+								<span class={link.icon} aria-hidden="true" />
+							</Show>
 							{link.label}
 						</Link>
 					)}
 				</For>
-				<Show when={config.github?.releases}>
-					<Link
-						to="/changelog"
-						class="px-3 h-9 inline-flex items-center rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
-					>
-						Changelog
-					</Link>
-				</Show>
-				<Show when={config.github?.contributors}>
-					<Link
-						to="/community"
-						class="px-3 h-9 inline-flex items-center rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
-					>
-						Community
-					</Link>
-				</Show>
-				<Show when={config.plugins?.length}>
-					<Link
-						to="/plugins"
-						class="px-3 h-9 inline-flex items-center rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
-					>
-						Plugins
-					</Link>
-				</Show>
-			</nav>
-			<div class="flex-1" />
-			<Show when={config.features?.search !== false}>
-				<button
-					type="button"
-					onClick={() => setSearchOpen(true)}
-					aria-label="Search documentation"
-					class="inline-flex items-center gap-2 px-3 h-9 rounded-md border border-border bg-surface text-sm text-muted hover:text-foreground hover:border-focus transition-colors cursor-pointer"
+				<Link
+					to="/create"
+					class="ml-2 px-3 h-9 inline-flex items-center gap-1.5 rounded-md text-sm font-medium bg-primary text-primary-foreground no-underline hover:bg-primary-hover transition-colors"
 				>
-					<span class="i-mdi:magnify" aria-hidden="true" />
-					<span class="hidden sm:inline">Search…</span>
-					<kbd class="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded border border-border">
-						Ctrl K
-					</kbd>
-				</button>
-			</Show>
-			<For each={socials()}>
-				{([key, href]) => (
+					<span class="i-mdi:plus" aria-hidden="true" />
+					Create docs
+				</Link>
+			</nav>
+
+			<div class="flex items-center gap-1 shrink-0">
+				<Show when={config.features?.search !== false}>
+					<button
+						type="button"
+						onClick={() => setSearchOpen(true)}
+						aria-label="Search documentation"
+						class="inline-flex items-center gap-2 px-3 h-9 rounded-md border border-border bg-surface text-sm text-muted hover:text-foreground hover:border-focus transition-colors cursor-pointer"
+					>
+						<span class="i-mdi:magnify" aria-hidden="true" />
+						<span class="hidden sm:inline">Search…</span>
+						<kbd class="hidden sm:inline text-[10px] px-1.5 py-0.5 rounded border border-border">
+							Ctrl K
+						</kbd>
+					</button>
+				</Show>
+				<For each={socials()}>
+					{([key, href]) => (
+						<a
+							href={href}
+							target="_blank"
+							rel="noreferrer"
+							aria-label={key}
+							title={key}
+							class="w-9 h-9 hidden sm:inline-flex items-center justify-center rounded-md border border-border text-muted hover:text-foreground hover:bg-surface transition-colors"
+						>
+							<span class={socialIcons[key]} aria-hidden="true" />
+						</a>
+					)}
+				</For>
+				<Show when={config.site.repoUrl}>
 					<a
-						href={href}
+						href={config.site.repoUrl}
 						target="_blank"
 						rel="noreferrer"
-						aria-label={key}
-						title={key}
-						class="w-9 h-9 hidden sm:inline-flex items-center justify-center rounded-md border border-border text-muted hover:text-foreground hover:bg-surface transition-colors"
+						aria-label="GitHub repository"
+						title="GitHub repository"
+						class="w-9 h-9 inline-flex items-center justify-center rounded-md border border-border text-muted hover:text-foreground hover:bg-surface transition-colors"
 					>
-						<span class={socialIcons[key]} aria-hidden="true" />
+						<span class="i-mdi:github" aria-hidden="true" />
 					</a>
-				)}
-			</For>
-			<Show when={config.site.repoUrl}>
-				<a
-					href={config.site.repoUrl}
-					target="_blank"
-					rel="noreferrer"
-					aria-label="GitHub repository"
-					title="GitHub repository"
-					class="w-9 h-9 inline-flex items-center justify-center rounded-md border border-border text-muted hover:text-foreground hover:bg-surface transition-colors"
-				>
-					<span class="i-mdi:github" aria-hidden="true" />
-				</a>
-			</Show>
-			<LocaleDropdown />
-			<VersionDropdown />
-			<ThemeToggle />
+				</Show>
+				<LocaleDropdown />
+				<VersionDropdown />
+				<ThemeToggle />
+			</div>
 			<LogoContextMenu
 				open={menu().open}
 				x={menu().x}
