@@ -127,6 +127,29 @@ export async function fetchCommits(
 	}));
 }
 
+export interface TagInfo {
+	name: string;
+	sha: string;
+	commit: { sha: string; url: string };
+}
+
+export interface BranchInfo {
+	name: string;
+	commit: { sha: string };
+}
+
+export interface IssueInfo {
+	number: number;
+	title: string;
+	state: string;
+	html_url: string;
+	created_at: string;
+	updated_at: string;
+	comments: number;
+	user: { login: string; avatar_url: string };
+	labels: { name: string; color: string }[];
+}
+
 export interface MilestoneInfo {
 	number: number;
 	title: string;
@@ -143,6 +166,39 @@ export async function fetchMilestones(
 ): Promise<MilestoneInfo[]> {
 	return fetchJson<MilestoneInfo[]>(
 		githubApiUrl(config, "/milestones?state=all&per_page=50"),
+	);
+}
+
+export async function fetchTags(config: GitHubConfig): Promise<TagInfo[]> {
+	return fetchJson<TagInfo[]>(githubApiUrl(config, "/tags?per_page=30"));
+}
+
+export async function fetchBranches(config: GitHubConfig): Promise<BranchInfo[]> {
+	return fetchJson<BranchInfo[]>(githubApiUrl(config, "/branches?per_page=30"));
+}
+
+export async function fetchLatestCommit(
+	config: GitHubConfig,
+	branch?: string,
+): Promise<CommitInfo> {
+	const ref = branch ?? config.branch ?? "main";
+	const raw = await fetchJson<{
+		sha: string;
+		commit: { message: string; author: { name: string; date: string } };
+		html_url: string;
+	}>(githubApiUrl(config, `/commits/${ref}`));
+	return {
+		sha: raw.sha.slice(0, 7),
+		message: raw.commit.message.split("\n")[0] ?? "",
+		author: raw.commit.author.name,
+		date: raw.commit.author.date,
+		html_url: raw.html_url,
+	};
+}
+
+export async function fetchIssues(config: GitHubConfig): Promise<IssueInfo[]> {
+	return fetchJson<IssueInfo[]>(
+		githubApiUrl(config, "/issues?state=open&sort=updated&per_page=30"),
 	);
 }
 
