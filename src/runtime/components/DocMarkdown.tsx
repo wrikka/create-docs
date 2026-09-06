@@ -1,7 +1,3 @@
-import { createHtmlRenderer } from "@comark/html";
-import rangi from "@comark/html/plugins/rangi";
-import security from "@comark/html/plugins/security";
-import { github } from "rangi/themes";
 import { createEffect, onCleanup } from "solid-js";
 import { useDocs } from "../context";
 import "../markdown-content.css";
@@ -15,24 +11,52 @@ const alertMap: Record<string, string> = {
 	danger: "rt-alert--danger",
 };
 
-const renderHtml = createHtmlRenderer({
-	plugins: [
-		security({
-			blockedTags: ["script", "iframe", "object", "embed", "link", "style"],
-			allowedProtocols: ["https", "http", "mailto"],
-		}),
-		rangi({ theme: github }),
-	],
-	components: {
-		blockquote: async ([, attrs, ...children], { render }) => {
-			const as = attrs.as as string | undefined;
-			if (!as) return `<blockquote>${await render(children)}</blockquote>`;
-			const cls = alertMap[as] ?? `rt-alert rt-alert--${as}`;
-			const title = as.charAt(0).toUpperCase() + as.slice(1);
-			return `<div class="rt-alert ${cls}" role="alert"><p class="rt-alert__title">${title}</p>${await render(children)}</div>`;
+let comarkRender: ((source: string) => Promise<string>) | undefined;
+let comarkLoading: Promise<void> | undefined;
+
+async function loadComarkRenderer(): Promise<void> {
+	if (comarkRender) return;
+	const [
+		{ createHtmlRenderer },
+		{ default: security },
+		{ default: rangi },
+		{ github },
+	] = await Promise.all([
+		import("@comark/html"),
+		import("@comark/html/plugins/security"),
+		import("@comark/html/plugins/rangi"),
+		import("rangi/themes"),
+	]);
+	comarkRender = createHtmlRenderer({
+		plugins: [
+			security({
+				blockedTags: ["script", "iframe", "object", "embed", "link", "style"],
+				allowedProtocols: ["https", "http", "mailto"],
+			}),
+			rangi({ theme: github }),
+		],
+		components: {
+			blockquote: async (
+				[, attrs, ...children],
+				{ render },
+			): Promise<string> => {
+				const as = attrs.as as string | undefined;
+				if (!as) return `<blockquote>${await render(children)}</blockquote>`;
+				const cls = alertMap[as] ?? `rt-alert rt-alert--${as}`;
+				const title = as.charAt(0).toUpperCase() + as.slice(1);
+				return `<div class="rt-alert ${cls}" role="alert"><p class="rt-alert__title">${title}</p>${await render(children)}</div>`;
+			},
 		},
-	},
-});
+	});
+}
+
+type RenderFn = (source: string) => Promise<string>;
+
+function getComarkRender(): Promise<RenderFn> {
+	if (comarkRender) return Promise.resolve(comarkRender);
+	if (!comarkLoading) comarkLoading = loadComarkRenderer();
+	return comarkLoading.then(() => comarkRender as RenderFn);
+}
 
 export function slugify(text: string): string {
 	return text
@@ -88,7 +112,7 @@ export function DocMarkdown(props: { source: string }) {
 			const str =
 				engine === "marked"
 					? await applyMarked(props.source)
-					: await renderHtml(props.source);
+					: await (await getComarkRender())(props.source);
 			el.innerHTML = str;
 			queueMicrotask(() => enhanceMarkdown(el as HTMLDivElement));
 		} catch (err) {
