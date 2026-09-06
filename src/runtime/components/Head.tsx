@@ -143,6 +143,14 @@ export function Head() {
 			type: "application/feed+json",
 			title: `${site.title} JSON Feed`,
 		});
+		setLink("alternate", `${siteUrl}/llm.txt`, {
+			type: "text/plain",
+			title: `${site.title} LLMs.txt`,
+		});
+		setLink("alternate", `${siteUrl}/llms-plugins.txt`, {
+			type: "text/plain",
+			title: `${site.title} Plugins LLMs.txt`,
+		});
 
 		const schemas: unknown[] = [];
 		schemas.push({

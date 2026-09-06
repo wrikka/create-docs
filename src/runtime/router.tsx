@@ -22,6 +22,7 @@ import { DocPage } from "./pages/DocPage";
 import { EditPage } from "./pages/EditPage";
 import { HomePage } from "./pages/HomePage";
 import { PluginsPage } from "./pages/PluginsPage";
+import { ShowcasePage } from "./pages/ShowcasePage";
 
 export function createDocsRouter(config: DocsAppConfig) {
 	const rootRoute = createRootRoute({
@@ -137,6 +138,13 @@ export function createDocsRouter(config: DocsAppConfig) {
 		});
 		extraRoutes.push(pluginsRoute);
 	}
+
+	const showcaseRoute = createRoute({
+		getParentRoute: () => rootRoute,
+		path: "showcase",
+		component: ShowcasePage,
+	});
+	extraRoutes.push(showcaseRoute);
 
 	const routeTree = rootRoute.addChildren([
 		indexRoute,

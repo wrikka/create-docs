@@ -137,6 +137,34 @@ export function generateJsonFeed(input: SeoInput): string {
 	);
 }
 
+export interface PluginInfo {
+	name: string;
+	description?: string;
+	install?: string;
+	url?: string;
+}
+
+export function generatePluginsLlmsTxt(
+	plugins: PluginInfo[],
+	siteTitle?: string,
+): string {
+	const lines: string[] = [
+		`# ${siteTitle ? `${siteTitle} — ` : ""}Plugins`,
+		"",
+		"Available plugins and integrations.",
+		"",
+		"## Plugins",
+	];
+	for (const p of plugins) {
+		lines.push(`- **${p.name}**`);
+		if (p.description) lines.push(`  - ${p.description}`);
+		if (p.url) lines.push(`  - URL: ${p.url}`);
+		if (p.install) lines.push(`  - Install: \`${p.install}\``);
+	}
+	if (plugins.length === 0) lines.push("- No plugins configured.");
+	return lines.join("\n");
+}
+
 export function generateLlmsTxt(input: SeoInput): string {
 	const baseUrl = (input.site.url ?? "").replace(/\/$/, "");
 	const lines: string[] = [

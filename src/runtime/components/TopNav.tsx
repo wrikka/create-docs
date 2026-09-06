@@ -110,13 +110,16 @@ export function TopNav(props: {
 	const topNav = () => config.topNav ?? [];
 	const extraNav = () => [
 		...(config.github?.releases
-			? [{ label: "Changelog", to: "/changelog", icon: "i-mdi:history" }]
+			? [{ label: "Release", to: "/changelog", icon: "i-mdi:tag" }]
 			: []),
 		...(config.github?.contributors
 			? [{ label: "Community", to: "/community", icon: "i-mdi:account-group" }]
 			: []),
 		...(config.plugins?.length
 			? [{ label: "Plugins", to: "/plugins", icon: "i-mdi:puzzle" }]
+			: []),
+		...(config.showcase?.length
+			? [{ label: "Showcase", to: "/showcase", icon: "i-mdi:view-dashboard" }]
 			: []),
 	];
 

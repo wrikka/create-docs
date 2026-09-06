@@ -95,6 +95,25 @@ export interface PluginInfo {
 	install?: string;
 }
 
+export interface ShowcaseInfo {
+	/** Unique id for the showcase item. */
+	id: string;
+	/** Display label. */
+	label: string;
+	/** Short description. */
+	description: string;
+	/** Optional cover image URL. */
+	image?: string;
+	/** Optional Iconify icon class used as fallback. */
+	icon?: string;
+	/** Optional link to the project/case. */
+	link?: string;
+	/** Optional tags. */
+	tags?: string[];
+	/** Optional badge. */
+	badge?: string;
+}
+
 export interface GitHubConfig {
 	owner: string;
 	repo: string;
@@ -167,6 +186,8 @@ export interface DocsAppConfig {
 	analytics?: { endpoint?: string };
 	/** Plugin marketplace: entries listed on the `/plugins` page. */
 	plugins?: PluginInfo[];
+	/** Showcase / featured-work grid used by the `/showcase` page. */
+	showcase?: ShowcaseInfo[];
 	theme?: { defaultMode?: "dark" | "light" };
 	/** Optional fixed announcement banner. */
 	announcement?: AnnouncementConfig;
