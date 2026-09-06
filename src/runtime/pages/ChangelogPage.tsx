@@ -1,7 +1,7 @@
-import { createResource, For, Show } from "solid-js";
+import { createSignal, For, onMount, Show } from "solid-js";
 import { SkeletonPage } from "../components/Skeleton";
 import { useDocs } from "../context";
-import { fetchReleases, GitHubFetchError } from "../github";
+import { fetchReleases, GitHubFetchError, type ReleaseInfo } from "../github";
 
 function formatDate(iso: string) {
 	try {
@@ -15,54 +15,62 @@ function formatDate(iso: string) {
 	}
 }
 
+function bodyHtml(body: string | null) {
+	if (!body) return "No release notes.";
+	const escaped = body
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;");
+	return escaped.replace(/\r\n/g, "\n").replace(/\n/g, "<br />");
+}
+
 export function ChangelogPage() {
 	const config = useDocs();
-	const github = () => config.github;
+	const [releases, setReleases] = createSignal<ReleaseInfo[]>([]);
+	const [loading, setLoading] = createSignal(true);
+	const [error, setError] = createSignal<string | null>(null);
 
-	const [releases] = createResource(
-		() => (github()?.releases ? github() : undefined),
-		async (cfg) => {
-			if (!cfg) return [];
-			return fetchReleases(cfg);
-		},
-	);
-
-	const bodyHtml = (body: string | null) => {
-		if (!body) return "No release notes.";
-		const escaped = body
-			.replace(/&/g, "&amp;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;");
-		return escaped.replace(/\r\n/g, "\n").replace(/\n/g, "<br />");
-	};
-
-	const errorMessage = () => {
-		const err = releases.error as GitHubFetchError | Error | undefined;
-		if (!err) return "";
-		if (err instanceof GitHubFetchError) {
-			return err.status === 404
-				? "Releases not found. Make sure the repository is public."
-				: `${err.message}: ${err.payload ?? ""}`.slice(0, 200);
+	onMount(async () => {
+		const cfg = config.github;
+		if (!cfg?.releases) {
+			setLoading(false);
+			return;
 		}
-		return err.message;
-	};
+		try {
+			setReleases(await fetchReleases(cfg));
+		} catch (err) {
+			if (err instanceof GitHubFetchError) {
+				setError(
+					err.status === 404
+						? "Releases not found. Make sure the repository is public."
+						: `${err.message}: ${err.payload ?? ""}`.slice(0, 200),
+				);
+			} else if (err instanceof Error) {
+				setError(err.message);
+			} else {
+				setError("Could not load releases from GitHub.");
+			}
+		} finally {
+			setLoading(false);
+		}
+	});
 
 	return (
 		<div class="max-w-3xl mx-auto px-6 py-8">
 			<h1 class="text-3xl font-bold mb-2">Changelog</h1>
 			<p class="text-muted mb-8">Releases from GitHub</p>
 
-			<Show when={releases.loading}>
+			<Show when={loading()}>
 				<SkeletonPage />
 			</Show>
 
-			<Show when={!releases.loading && errorMessage()}>
+			<Show when={!loading() && error()}>
 				<div class="border border-destructive/30 bg-destructive/10 rounded-lg p-5 mb-6">
 					<div class="flex items-center gap-2 mb-1 text-destructive font-medium">
 						<span class="i-mdi:alert-circle" aria-hidden="true" />
 						Failed to load releases
 					</div>
-					<p class="text-sm text-destructive/90 mb-3">{errorMessage()}</p>
+					<p class="text-sm text-destructive/90 mb-3">{error()}</p>
 					<Show when={config.site.repoUrl}>
 						<a
 							href={`${config.site.repoUrl}/releases`}
@@ -77,13 +85,7 @@ export function ChangelogPage() {
 				</div>
 			</Show>
 
-			<Show
-				when={
-					!releases.loading &&
-					!releases.error &&
-					(releases() ?? []).length === 0
-				}
-			>
+			<Show when={!loading() && !error() && releases().length === 0}>
 				<div class="flex flex-col items-center gap-3 py-16 rounded-lg border border-dashed border-border text-muted">
 					<span class="i-mdi:history text-4xl" aria-hidden="true" />
 					<p class="m-0">No releases found for this repository.</p>
@@ -101,7 +103,7 @@ export function ChangelogPage() {
 			</Show>
 
 			<div class="space-y-6">
-				<For each={releases() ?? []}>
+				<For each={releases()}>
 					{(release) => (
 						<article class="border border-border rounded-lg p-5 bg-surface/30 hover:border-focus transition-colors">
 							<div class="flex items-center gap-2 mb-2">
