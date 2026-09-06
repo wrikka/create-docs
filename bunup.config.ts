@@ -9,5 +9,5 @@ export default defineConfig({
 	minify: true,
 	target: "bun",
 	outDir: "./dist",
-	exports: true,
+	exports: false,
 });

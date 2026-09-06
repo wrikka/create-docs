@@ -30,6 +30,10 @@ export interface DocsAppFeatures {
 	themeToggle?: boolean;
 }
 
+export interface MarkdownConfig {
+	engine?: "comark" | "marked";
+}
+
 export interface DocsAppConfig {
 	site: { title: string; description?: string; repoUrl?: string };
 	/** Injected data source for markdown doc collections. */
@@ -41,5 +45,7 @@ export interface DocsAppConfig {
 	/** API reference collections (Scalar-style). */
 	apiCollections?: ApiCollection[];
 	features?: DocsAppFeatures;
+	/** Markdown rendering engine configuration. */
+	markdown?: MarkdownConfig;
 	theme?: { defaultMode?: "dark" | "light" };
 }

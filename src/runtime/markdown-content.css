@@ -272,3 +272,21 @@
 	padding-left: 24px;
 	font-size: 12px;
 }
+
+/* Rangi / Shiki syntax highlighting */
+.rt-markdown pre.shj {
+	background: var(--rt-bg);
+}
+
+.rt-markdown pre.shj code {
+	color: var(--rt-fg);
+}
+
+html.dark .rt-markdown .shj span {
+	color: var(--shiki-dark) !important;
+}
+
+html.dark .rt-markdown pre.shj {
+	background-color: var(--shiki-dark-bg) !important;
+	color: var(--shiki-dark) !important;
+}

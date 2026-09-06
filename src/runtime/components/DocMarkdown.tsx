@@ -1,11 +1,45 @@
+import { createHtmlRenderer } from "@comark/html";
+import rangi from "@comark/html/plugins/rangi";
+import security from "@comark/html/plugins/security";
+import { github } from "rangi/themes";
 import { createEffect, onCleanup } from "solid-js";
+import { useDocs } from "../context";
 import "../markdown-content.css";
+
+const alertMap: Record<string, string> = {
+	note: "rt-alert--note",
+	tip: "rt-alert--tip",
+	important: "rt-alert--important",
+	warning: "rt-alert--warning",
+	caution: "rt-alert--caution",
+	danger: "rt-alert--danger",
+};
+
+const renderHtml = createHtmlRenderer({
+	plugins: [
+		security({
+			blockedTags: ["script", "iframe", "object", "embed", "link", "style"],
+			allowedProtocols: ["https", "http", "mailto"],
+		}),
+		rangi({ theme: github }),
+	],
+	components: {
+		blockquote: async ([, attrs, ...children], { render }) => {
+			const as = attrs.as as string | undefined;
+			if (!as) return `<blockquote>${await render(children)}</blockquote>`;
+			const cls = alertMap[as] ?? `rt-alert rt-alert--${as}`;
+			const title = as.charAt(0).toUpperCase() + as.slice(1);
+			return `<div class="rt-alert ${cls}" role="alert"><p class="rt-alert__title">${title}</p>${await render(children)}</div>`;
+		},
+	},
+});
 
 export function slugify(text: string): string {
 	return text
+		.trim()
 		.toLowerCase()
-		.replace(/[^\w\s-]/g, "")
-		.replace(/\s+/g, "-")
+		.replace(/[^\p{L}\p{N}\s-]/gu, "")
+		.replace(/\s+/gu, "-")
 		.replace(/-+/g, "-")
 		.substring(0, 80);
 }
@@ -13,6 +47,7 @@ export function slugify(text: string): string {
 function enhanceMarkdown(el: HTMLDivElement) {
 	const headings = el.querySelectorAll("h1, h2, h3, h4, h5, h6");
 	for (const h of headings) {
+		if (h.id) continue;
 		const id = slugify(h.textContent ?? "");
 		if (id) h.id = id;
 	}
@@ -38,26 +73,22 @@ function enhanceMarkdown(el: HTMLDivElement) {
 	}
 }
 
-function applyAlerts(html: string): string {
-	return html.replace(
-		/<blockquote>\s*<p>\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION|DANGER)\]([\s\S]*?)<\/blockquote>/gi,
-		(_, type: string, inner: string) => {
-			const t = type.toLowerCase();
-			const title = t.charAt(0).toUpperCase() + t.slice(1);
-			const body = inner.trim().replace(/<\/p>\s*$/, "");
-			return `<div class="rt-alert rt-alert--${t}"><p class="rt-alert__title">${title}</p><p>${body}</p></div>`;
-		},
-	);
+function applyMarked(source: string) {
+	return import("marked").then(({ marked }) => marked.parse(source) as string);
 }
 
 export function DocMarkdown(props: { source: string }) {
 	let el: HTMLDivElement | undefined;
+	const config = useDocs();
 
 	const renderMarkdown = async () => {
 		if (!el) return;
 		try {
-			const { marked } = await import("marked");
-			const str = applyAlerts(marked.parse(props.source) as string);
+			const engine = config.markdown?.engine ?? "comark";
+			const str =
+				engine === "marked"
+					? await applyMarked(props.source)
+					: await renderHtml(props.source);
 			el.innerHTML = str;
 			queueMicrotask(() => enhanceMarkdown(el as HTMLDivElement));
 		} catch (err) {
@@ -65,7 +96,9 @@ export function DocMarkdown(props: { source: string }) {
 		}
 	};
 
-	createEffect(renderMarkdown);
+	createEffect(() => {
+		renderMarkdown();
+	});
 	onCleanup(() => {
 		el = undefined;
 	});

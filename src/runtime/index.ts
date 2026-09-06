@@ -26,6 +26,7 @@ export type {
 	DocsAppFeatures,
 	HomeConfig,
 	HomeFeature,
+	MarkdownConfig,
 } from "./config";
 export { DocsProvider, useDocs } from "./context";
 export { createDocsList, useCollections } from "./data";

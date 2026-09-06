@@ -24,6 +24,12 @@
 				"default": "./dist/index.cjs"
 			}
 		},
+		"./solid": {
+			"types": "./src/runtime/index.ts",
+			"default": "./src/runtime/index.ts"
+		},
+		"./theme.css": "./src/runtime/theme.css",
+		"./markdown-content.css": "./src/runtime/markdown-content.css",
 		"./package.json": "./package.json"
 	},
 	"sideEffects": false,
@@ -75,12 +81,15 @@
 		"@codemirror/lang-markdown": "^6.5.2",
 		"@codemirror/state": "^6.7.1",
 		"@codemirror/view": "^6.43.9",
+		"@comark/html": "^0.6.2",
 		"@mdx-js/mdx": "^3.1.1",
 		"@monaco-editor/react": "^4.7.0",
 		"arktype": "catalog:",
+		"comark": "^0.6.2",
 		"js-yaml": "^5.4.1",
 		"marked": "^18.0.11",
 		"monaco-editor": "catalog:",
+		"rangi": "^2.2.0",
 		"simple-git": "^3.36.0",
 		"solid-js": "catalog:",
 		"velite": "^0.4.0"
