@@ -4,6 +4,27 @@ import { useDocs } from "../context";
 
 const builtIn: PluginInfo[] = [
 	{
+		name: "MCP server",
+		description:
+			"Expose docs search and content as Model Context Protocol tools at /mcp.",
+		icon: "i-mdi:robot-outline",
+		version: "built-in",
+	},
+	{
+		name: "LLM documentation",
+		description:
+			"Auto-generated /llms.txt and /llms-plugins.txt so AI agents can consume the docs.",
+		icon: "i-mdi:text-box-outline",
+		version: "built-in",
+	},
+	{
+		name: "GitHub OAuth",
+		description:
+			"Sign in with GitHub and save docs directly back to a repository.",
+		icon: "i-mdi:github",
+		version: "built-in",
+	},
+	{
 		name: "@wrikka/create-docs",
 		description: "The core docs runtime with SolidJS and TanStack Router.",
 		icon: "i-mdi:book-open-page-variant",
@@ -33,6 +54,26 @@ const builtIn: PluginInfo[] = [
 		icon: "i-mdi:fire",
 		version: "built-in",
 	},
+	{
+		name: "Search & command palette",
+		description:
+			"MiniSearch-backed full-text search with a two-column command palette.",
+		icon: "i-mdi:magnify",
+		version: "built-in",
+	},
+	{
+		name: "PWA",
+		description:
+			"Service worker, web manifest, and offline support out of the box.",
+		icon: "i-mdi:cellphone-arrow-down",
+		version: "built-in",
+	},
+	{
+		name: "SEO feeds",
+		description: "Sitemap, RSS/Atom, robots.txt, and Open Graph generation.",
+		icon: "i-mdi:rss",
+		version: "built-in",
+	},
 ];
 
 export function PluginsPage() {
@@ -46,18 +87,7 @@ export function PluginsPage() {
 	};
 
 	const plugins = () =>
-		(config.plugins ?? []).length > 0
-			? config.plugins
-			: builtIn.map((p) => ({
-					...p,
-					install:
-						p.version === "built-in"
-							? undefined
-							: `bun add ${p.name
-									.toLowerCase()
-									.replace(/\s+adapter$/, "")
-									.replace(/\s/g, "-")}`,
-				}));
+		(config.plugins ?? []).length > 0 ? config.plugins : builtIn;
 
 	const categories = () => {
 		const list = plugins() ?? [];
@@ -67,12 +97,27 @@ export function PluginsPage() {
 				? "Packages"
 				: p.name.includes("adapter")
 					? "Adapters"
-					: "Integrations";
+					: p.name.startsWith("MCP") ||
+							p.name.includes("LLM") ||
+							p.name.includes("OAuth") ||
+							p.name.includes("PWA") ||
+							p.name.includes("SEO") ||
+							p.name.includes("Search")
+						? "Integrations"
+						: "Core";
 			const g = groups.get(cat) ?? [];
 			g.push(p);
 			groups.set(cat, g);
 		}
-		return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+		const order = ["Core", "Integrations", "Adapters", "Packages"];
+		return [...groups.entries()].sort(([a], [b]) => {
+			const ia = order.indexOf(a);
+			const ib = order.indexOf(b);
+			if (ia !== -1 && ib !== -1) return ia - ib;
+			if (ia !== -1) return -1;
+			if (ib !== -1) return 1;
+			return a.localeCompare(b);
+		});
 	};
 
 	return (
@@ -86,6 +131,37 @@ export function PluginsPage() {
 					</p>
 				</div>
 			</div>
+
+			<Show when={config.features?.mcp}>
+				<div class="mt-6 mb-8 border border-border rounded-lg p-4 bg-surface/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+					<div class="flex items-center gap-3">
+						<span
+							class="i-mdi:robot-outline text-2xl text-primary"
+							aria-hidden="true"
+						/>
+						<div>
+							<div class="font-medium text-foreground">MCP & LLM ready</div>
+							<div class="text-xs text-muted">
+								Point your MCP client at /mcp and grab /llms.txt
+							</div>
+						</div>
+					</div>
+					<div class="flex items-center gap-2">
+						<a
+							href="/llms.txt"
+							class="px-3 h-9 inline-flex items-center rounded-md border border-border bg-background text-xs text-muted hover:text-foreground hover:bg-surface transition-colors no-underline"
+						>
+							llms.txt
+						</a>
+						<a
+							href="/llms-plugins.txt"
+							class="px-3 h-9 inline-flex items-center rounded-md border border-border bg-background text-xs text-muted hover:text-foreground hover:bg-surface transition-colors no-underline"
+						>
+							llms-plugins.txt
+						</a>
+					</div>
+				</div>
+			</Show>
 
 			<Show when={(config.plugins ?? []).length === 0}>
 				<div class="border border-border rounded-lg p-4 bg-surface/30 mb-8">
@@ -127,6 +203,17 @@ export function PluginsPage() {
 													</span>
 												</Show>
 											</div>
+											<Show when={p.url}>
+												<a
+													href={p.url}
+													target="_blank"
+													rel="noreferrer"
+													aria-label={`${p.name} docs`}
+													class="w-7 h-7 inline-flex items-center justify-center rounded-md border border-border text-muted hover:text-foreground hover:bg-surface transition-colors"
+												>
+													<span class="i-mdi:open-in-new" aria-hidden="true" />
+												</a>
+											</Show>
 										</div>
 										<p class="text-sm text-muted m-0 flex-1 leading-relaxed">
 											{p.description}
@@ -148,17 +235,6 @@ export function PluginsPage() {
 												<span class="text-xs text-muted">
 													No install needed
 												</span>
-											</Show>
-											<Show when={p.url}>
-												<a
-													href={p.url}
-													target="_blank"
-													rel="noreferrer"
-													aria-label={`${p.name} docs`}
-													class="ml-auto w-7 h-7 inline-flex items-center justify-center rounded-md border border-border text-muted hover:text-foreground hover:bg-surface transition-colors"
-												>
-													<span class="i-mdi:open-in-new" aria-hidden="true" />
-												</a>
 											</Show>
 										</div>
 									</article>

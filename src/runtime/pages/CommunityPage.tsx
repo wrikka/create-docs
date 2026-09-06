@@ -1,15 +1,24 @@
 import { createSignal, For, onMount, Show } from "solid-js";
+import { GitHubStats } from "../components/GitHubStats";
 import { SkeletonPage } from "../components/Skeleton";
 import type { GitHubConfig } from "../config";
 import { useDocs } from "../context";
 import {
+	type BranchInfo,
 	type CommitInfo,
 	type Contributor,
+	fetchBranches,
 	fetchCommits,
 	fetchContributors,
+	fetchIssues,
 	fetchMilestones,
+	fetchRepoStats,
+	fetchTags,
 	GitHubFetchError,
+	type IssueInfo,
 	type MilestoneInfo,
+	type RepoStats,
+	type TagInfo,
 } from "../github";
 
 function formatDate(iso: string | null) {
@@ -45,6 +54,10 @@ export function CommunityPage() {
 	const [contributors, setContributors] = createSignal<Contributor[]>([]);
 	const [commits, setCommits] = createSignal<CommitInfo[]>([]);
 	const [milestones, setMilestones] = createSignal<MilestoneInfo[]>([]);
+	const [tags, setTags] = createSignal<TagInfo[]>([]);
+	const [branches, setBranches] = createSignal<BranchInfo[]>([]);
+	const [issues, setIssues] = createSignal<IssueInfo[]>([]);
+	const [stats, setStats] = createSignal<RepoStats | null>(null);
 	const [loading, setLoading] = createSignal(true);
 	const [error, setError] = createSignal<string | null>(null);
 
@@ -55,14 +68,22 @@ export function CommunityPage() {
 			return;
 		}
 		try {
-			const [c, m, h] = await Promise.all([
+			const [c, m, h, t, b, i, s] = await Promise.all([
 				fetchContributors(cfg),
 				fetchMilestones(cfg),
 				fetchCommits(cfg, cfg.branch),
+				cfg.releases ? fetchTags(cfg) : ([] as TagInfo[]),
+				fetchBranches(cfg),
+				cfg.issues ? fetchIssues(cfg) : ([] as IssueInfo[]),
+				fetchRepoStats(cfg),
 			]);
 			setContributors(c);
 			setMilestones(m);
 			setCommits(h);
+			setTags(t);
+			setBranches(b);
+			setIssues(i);
+			setStats(s);
 		} catch (err) {
 			setError(errorText(err));
 		} finally {
@@ -71,11 +92,42 @@ export function CommunityPage() {
 	});
 
 	return (
-		<div class="max-w-4xl mx-auto px-6 py-8 pb-24">
+		<div class="max-w-5xl mx-auto px-6 py-8 pb-24">
 			<h1 class="text-3xl font-bold mb-2">Community</h1>
-			<p class="text-muted mb-8">
-				Contributors, recent activity, and project milestones
+			<p class="text-muted mb-6">
+				Contributors, recent activity, milestones, tags, and issues.
 			</p>
+
+			<div class="flex justify-start mb-8">
+				<GitHubStats />
+			</div>
+
+			<Show when={stats()}>
+				{(s) => (
+					<div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+						<div class="border border-border rounded-lg p-3 bg-surface/30 text-center">
+							<div class="text-2xl font-bold text-foreground">{s().stars}</div>
+							<div class="text-xs text-muted">Stars</div>
+						</div>
+						<div class="border border-border rounded-lg p-3 bg-surface/30 text-center">
+							<div class="text-2xl font-bold text-foreground">{s().forks}</div>
+							<div class="text-xs text-muted">Forks</div>
+						</div>
+						<div class="border border-border rounded-lg p-3 bg-surface/30 text-center">
+							<div class="text-2xl font-bold text-foreground">
+								{s().openIssues}
+							</div>
+							<div class="text-xs text-muted">Open issues</div>
+						</div>
+						<div class="border border-border rounded-lg p-3 bg-surface/30 text-center">
+							<div class="text-2xl font-bold text-foreground">
+								{s().openPRs}
+							</div>
+							<div class="text-xs text-muted">Open PRs</div>
+						</div>
+					</div>
+				)}
+			</Show>
 
 			<Show when={loading()}>
 				<SkeletonPage />
@@ -153,7 +205,7 @@ export function CommunityPage() {
 							Milestones
 						</h2>
 						<div class="space-y-3">
-							<For each={milestones()}>
+							<For each={milestones().slice(0, 10)}>
 								{(m) => {
 									const total = () => m.open_issues + m.closed_issues;
 									const pct = () =>
@@ -214,6 +266,86 @@ export function CommunityPage() {
 					</section>
 				</Show>
 
+				<div class="grid md:grid-cols-2 gap-8 mb-12">
+					<section>
+						<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+							<span class="i-mdi:tag-outline" aria-hidden="true" />
+							Tags
+						</h2>
+						<Show when={tags().length === 0}>
+							<p class="text-sm text-muted">No tags found.</p>
+						</Show>
+						<div class="flex flex-wrap gap-2">
+							<For each={tags().slice(0, 24)}>
+								{(t) => (
+									<a
+										href={`${config.site.repoUrl}/releases/tag/${t.name}`}
+										target="_blank"
+										rel="noreferrer"
+										class="text-xs px-2.5 py-1 rounded-full border border-border bg-surface text-muted hover:text-foreground hover:border-focus transition-colors no-underline"
+									>
+										{t.name}
+									</a>
+								)}
+							</For>
+						</div>
+					</section>
+
+					<section>
+						<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+							<span class="i-mdi:source-branch" aria-hidden="true" />
+							Branches
+						</h2>
+						<Show when={branches().length === 0}>
+							<p class="text-sm text-muted">No branches found.</p>
+						</Show>
+						<div class="flex flex-wrap gap-2">
+							<For each={branches().slice(0, 12)}>
+								{(b) => (
+									<a
+										href={`${config.site.repoUrl}/tree/${b.name}`}
+										target="_blank"
+										rel="noreferrer"
+										class="text-xs px-2.5 py-1 rounded-full border border-border bg-surface text-muted hover:text-foreground hover:border-focus transition-colors no-underline"
+									>
+										{b.name}
+									</a>
+								)}
+							</For>
+						</div>
+					</section>
+				</div>
+
+				<Show when={issues().length > 0}>
+					<section class="mb-12">
+						<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+							<span class="i-mdi:alert-circle-outline" aria-hidden="true" />
+							Open issues
+						</h2>
+						<div class="space-y-2">
+							<For each={issues().slice(0, 10)}>
+								{(i) => (
+									<a
+										href={i.html_url}
+										target="_blank"
+										rel="noreferrer"
+										class="flex items-center gap-3 border border-border rounded-lg px-4 py-2 bg-surface/30 hover:border-focus transition-colors no-underline"
+									>
+										<span
+											class="i-mdi:alert-circle-outline text-success shrink-0"
+											aria-hidden="true"
+										/>
+										<span class="flex-1 min-w-0 truncate text-sm text-foreground">
+											{i.title}
+										</span>
+										<span class="text-xs text-muted shrink-0">#{i.number}</span>
+									</a>
+								)}
+							</For>
+						</div>
+					</section>
+				</Show>
+
 				<section>
 					<h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
 						<span class="i-mdi:source-commit" aria-hidden="true" />
@@ -226,7 +358,7 @@ export function CommunityPage() {
 						</div>
 					</Show>
 					<ul class="space-y-2">
-						<For each={commits()}>
+						<For each={commits().slice(0, 20)}>
 							{(c) => (
 								<li class="flex items-baseline gap-3 border border-border rounded-lg px-4 py-2 bg-surface/30">
 									<code class="text-xs text-primary shrink-0">{c.sha}</code>

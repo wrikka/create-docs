@@ -306,6 +306,27 @@ function enhanceMarkdown(el: HTMLDivElement) {
 				});
 				wrap.appendChild(toggle);
 			}
+
+			// Diff-friendly line coloring for unified diffs.
+			if (lang === "diff") {
+				const codeEl = pre.querySelector("code");
+				if (codeEl) {
+					const diffLines = (codeEl.textContent ?? "").split("\n");
+					codeEl.innerHTML = diffLines
+						.map((ln) => {
+							if (ln.startsWith("+++") || ln.startsWith("---"))
+								return `<span class="rt-diff-line rt-diff-meta">${escapeHtml(ln)}</span>`;
+							if (ln.startsWith("+"))
+								return `<span class="rt-diff-line rt-diff-add">${escapeHtml(ln)}</span>`;
+							if (ln.startsWith("-"))
+								return `<span class="rt-diff-line rt-diff-del">${escapeHtml(ln)}</span>`;
+							if (ln.startsWith("@@"))
+								return `<span class="rt-diff-line rt-diff-hunk">${escapeHtml(ln)}</span>`;
+							return `<span class="rt-diff-line rt-diff-ctx">${escapeHtml(ln)}</span>`;
+						})
+						.join("\n");
+				}
+			}
 		} else {
 			pre.appendChild(btn);
 		}

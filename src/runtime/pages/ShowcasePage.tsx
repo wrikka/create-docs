@@ -1,13 +1,18 @@
 import type { JSX } from "solid-js";
-import { For, Show } from "solid-js";
+import { createMemo, createSignal, For, Show } from "solid-js";
 import type { ShowcaseInfo } from "../config";
 import { useDocs } from "../context";
 
 function Card(props: { link?: string; children: JSX.Element }) {
 	const classes =
-		"group border border-border rounded-xl overflow-hidden bg-surface/30 hover:border-focus transition-colors flex flex-col";
+		"group border border-border rounded-xl overflow-hidden bg-surface/30 hover:border-focus transition-all hover:-translate-y-0.5 hover:shadow-lg flex flex-col";
 	return props.link ? (
-		<a href={props.link} target="_blank" rel="noreferrer" class={classes}>
+		<a
+			href={props.link}
+			target="_blank"
+			rel="noreferrer"
+			class={`${classes} no-underline`}
+		>
 			{props.children}
 		</a>
 	) : (
@@ -17,15 +22,26 @@ function Card(props: { link?: string; children: JSX.Element }) {
 
 function ShowcaseCard(props: { item: ShowcaseInfo }) {
 	const { item } = props;
+	const coverStyle = () => {
+		if (item.image) return {};
+		const color = item.coverColor ?? "hsl(var(--color-primary) / 0.35)";
+		return {
+			background: `linear-gradient(135deg, ${color}, transparent)`,
+		};
+	};
+
 	return (
 		<Card link={item.link}>
-			<div class="relative h-40 w-full bg-background border-b border-border overflow-hidden">
+			<div
+				class="relative h-44 w-full bg-background border-b border-border overflow-hidden"
+				style={coverStyle()}
+			>
 				<Show
 					when={item.image}
 					fallback={
 						<div class="w-full h-full flex items-center justify-center">
 							<span
-								class={`${item.icon ?? "i-mdi:view-dashboard"} text-5xl text-primary/60`}
+								class={`${item.icon ?? "i-mdi:view-dashboard"} text-6xl text-primary/60`}
 								aria-hidden="true"
 							/>
 						</div>
@@ -75,7 +91,35 @@ function ShowcaseCard(props: { item: ShowcaseInfo }) {
 
 export function ShowcasePage() {
 	const config = useDocs();
-	const items = () => config.showcase ?? [];
+	const allItems = () => config.showcase ?? [];
+	const [search, setSearch] = createSignal("");
+	const [tag, setTag] = createSignal<string | null>(null);
+
+	const allTags = createMemo(() => {
+		const set = new Set<string>();
+		for (const item of allItems()) {
+			for (const t of item.tags ?? []) set.add(t);
+		}
+		return [...set].sort();
+	});
+
+	const filtered = createMemo(() => {
+		const q = search().toLowerCase();
+		const t = tag();
+		return allItems().filter((item) => {
+			const matchesSearch =
+				!q ||
+				item.label.toLowerCase().includes(q) ||
+				item.description.toLowerCase().includes(q) ||
+				item.tags?.some((tg) => tg.toLowerCase().includes(q));
+			const matchesTag = !t || item.tags?.includes(t);
+			return matchesSearch && matchesTag;
+		});
+	});
+
+	const featured = () => allItems()[0];
+	const rest = () =>
+		filtered().filter((i) => (featured() ? i.id !== featured()!.id : true));
 
 	return (
 		<div class="max-w-5xl mx-auto px-6 py-10 pb-24">
@@ -92,19 +136,66 @@ export function ShowcasePage() {
 				</div>
 			</div>
 
-			<Show when={items().length === 0}>
+			<div class="flex flex-col sm:flex-row gap-3 my-8">
+				<label class="flex items-center gap-2 flex-1 px-3 h-10 rounded-lg border border-border bg-surface text-muted text-sm">
+					<span class="i-mdi:magnify" aria-hidden="true" />
+					<input
+						type="search"
+						value={search()}
+						onInput={(e) => setSearch(e.currentTarget.value)}
+						placeholder="Filter showcase…"
+						aria-label="Filter showcase"
+						class="bg-transparent outline-none border-none w-full text-foreground placeholder:text-muted"
+					/>
+				</label>
+				<div class="flex flex-wrap gap-2">
+					<button
+						type="button"
+						onClick={() => setTag(null)}
+						class={`px-3 h-9 rounded-full text-xs border transition-colors cursor-pointer ${
+							tag() == null
+								? "bg-primary text-primary-foreground border-primary"
+								: "bg-surface text-muted border-border hover:border-focus"
+						}`}
+					>
+						All
+					</button>
+					<For each={allTags()}>
+						{(t) => (
+							<button
+								type="button"
+								onClick={() => setTag(t)}
+								class={`px-3 h-9 rounded-full text-xs border transition-colors cursor-pointer ${
+									tag() === t
+										? "bg-primary text-primary-foreground border-primary"
+										: "bg-surface text-muted border-border hover:border-focus"
+								}`}
+							>
+								{t}
+							</button>
+						)}
+					</For>
+				</div>
+			</div>
+
+			<Show when={!search() && !tag() && featured()}>
+				<section class="mb-10">
+					<h2 class="text-lg font-semibold mb-3 text-muted">Featured</h2>
+					<div class="sm:max-w-2xl">
+						<ShowcaseCard item={featured()!} />
+					</div>
+				</section>
+			</Show>
+
+			<Show when={filtered().length === 0}>
 				<div class="flex flex-col items-center gap-3 py-16 rounded-lg border border-dashed border-border text-muted">
 					<span class="i-mdi:image-plus text-4xl" aria-hidden="true" />
-					<p class="m-0">No showcase items configured yet.</p>
-					<p class="text-sm m-0 max-w-md text-center">
-						Add a `showcase` array to your docs config with cover images,
-						descriptions, and links.
-					</p>
+					<p class="m-0">No showcase items match your filters.</p>
 				</div>
 			</Show>
 
 			<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-				<For each={items()}>{(item) => <ShowcaseCard item={item} />}</For>
+				<For each={rest()}>{(item) => <ShowcaseCard item={item} />}</For>
 			</div>
 		</div>
 	);

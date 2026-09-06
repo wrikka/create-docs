@@ -120,6 +120,8 @@ export interface ShowcaseInfo {
 	tags?: string[];
 	/** Optional badge. */
 	badge?: string;
+	/** Optional gradient cover color (hex) when no image is provided. */
+	coverColor?: string;
 }
 
 export interface GitHubOAuthConfig {
