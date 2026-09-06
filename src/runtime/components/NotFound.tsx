@@ -17,6 +17,9 @@ export function NotFound() {
 		}));
 
 	const extra = () => [
+		...(config.github?.issues
+			? [{ label: "Issues", to: "/issues", icon: "i-mdi:alert-circle-outline" }]
+			: []),
 		...(config.github?.releases
 			? [{ label: "Release", to: "/changelog", icon: "i-mdi:tag" }]
 			: []),

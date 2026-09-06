@@ -121,6 +121,7 @@ export interface GitHubConfig {
 	stats?: boolean;
 	releases?: boolean;
 	contributors?: boolean;
+	issues?: boolean;
 }
 
 export interface SiteLink {

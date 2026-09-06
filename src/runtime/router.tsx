@@ -21,6 +21,7 @@ import { CreatePage } from "./pages/CreatePage";
 import { DocPage } from "./pages/DocPage";
 import { EditPage } from "./pages/EditPage";
 import { HomePage } from "./pages/HomePage";
+import { IssuesPage } from "./pages/IssuesPage";
 import { PluginsPage } from "./pages/PluginsPage";
 import { ShowcasePage } from "./pages/ShowcasePage";
 
@@ -110,6 +111,15 @@ export function createDocsRouter(config: DocsAppConfig) {
 			component: CommunityPage,
 		});
 		extraRoutes.push(communityRoute);
+	}
+
+	if (config.github?.issues) {
+		const issuesRoute = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "issues",
+			component: IssuesPage,
+		});
+		extraRoutes.push(issuesRoute);
 	}
 
 	if (config.features?.analytics) {
