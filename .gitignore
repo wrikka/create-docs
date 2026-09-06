@@ -26,3 +26,5 @@ test-results/
 .velite/
 .vite/
 .solid/
+dev/dist/
+.wrangler/

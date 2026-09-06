@@ -1,9 +1,17 @@
 {
-	"$schema": "../../../node_modules/@biomejs/biome/configuration_schema.json",
-	"root": false,
-	"extends": ["../../../biome.jsonc"],
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"vcs": {
+		"enabled": true,
+		"clientKind": "git",
+		"useIgnoreFile": true
+	},
+	"formatter": {
+		"enabled": true
+	},
 	"linter": {
+		"enabled": true,
 		"rules": {
+			"preset": "recommended",
 			"a11y": {
 				"noStaticElementInteractions": "off",
 				"noNoninteractiveElementToInteractiveRole": "off",
@@ -11,8 +19,24 @@
 				"useAnchorContent": "off"
 			},
 			"correctness": {
+				"noNodejsModules": "off",
 				"useHookAtTopLevel": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "off"
+			},
+			"suspicious": {
+				"noExplicitAny": "off"
 			}
+		},
+		"domains": {
+			"types": "recommended",
+			"project": "recommended",
+			"test": "recommended",
+			"react": "recommended"
 		}
+	},
+	"assist": {
+		"enabled": true
 	}
 }

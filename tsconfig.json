@@ -1,5 +1,5 @@
 {
-	"extends": "../../../packages/utils/tsconfig.base.json",
+	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
 		"composite": true,
 		"rootDir": ".",
