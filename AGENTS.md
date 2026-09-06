@@ -37,6 +37,7 @@ Run the following scripts from `apps/web/create-docs`:
 | `scan` | `ast-grep scan` |
 | `check` | `bun run lint && bun run typecheck && bun run scan` |
 | `verify` | `bun run check && bun run test && bun run build` |
+| `pull:github` | `bun scripts/github-pull.ts --config <path>` |
 | `deps:analyze` | `bunx depcheck` |
 | `clean` | `bunx rimraf dist node_modules` |
 | `security` | `bunx audit` |

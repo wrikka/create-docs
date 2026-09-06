@@ -4,7 +4,8 @@
 	"version": "0.1.0",
 	"type": "module",
 	"bin": {
-		"create-docs": "./bin/cli.js"
+		"create-docs": "./bin/cli.js",
+		"create-docs-pull": "./scripts/github-pull.ts"
 	},
 	"files": [
 		"bin",
@@ -12,7 +13,8 @@
 		"src",
 		"README.md",
 		"docs",
-		"./dist"
+		"./dist",
+		"scripts"
 	],
 	"module": "./dist/index.js",
 	"main": "./dist/index.cjs",
@@ -81,7 +83,8 @@
 		"verify": "bun run check && bun run test && bun run build",
 		"deps:analyze": "bunx depcheck",
 		"clean": "bunx rimraf dist node_modules",
-		"security": "bunx audit"
+		"security": "bunx audit",
+		"pull": "bun scripts/github-pull.ts"
 	},
 	"dependencies": {
 		"@codemirror/basic-setup": "^0.20.0",
