@@ -5,11 +5,13 @@ import type { DocsAppConfig } from "./config";
 import { DocsProvider } from "./context";
 import { setupPwa } from "./pwa";
 import { createDocsRouter } from "./router";
+import { initTheme } from "./theme";
 import "./theme.css";
 import "./markdown-content.css";
 
 /** App root component factory — mount with your own render call. */
 export function createDocsApp(config: DocsAppConfig): () => JSX.Element {
+	if (typeof document !== "undefined") initTheme(config.theme?.defaultMode);
 	setupPwa(config);
 	const router = createDocsRouter(config);
 	return () => (

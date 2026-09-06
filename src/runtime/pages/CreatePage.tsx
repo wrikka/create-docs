@@ -47,6 +47,8 @@ export function CreatePage() {
 	const [token, setToken] = createSignal(getGitHubToken() ?? "");
 	const [showManual, setShowManual] = createSignal(!getGitHubToken());
 	const [cfToken, setCfToken] = createSignal("");
+	const [cfAccountId, setCfAccountId] = createSignal("");
+	const [deployUrl, setDeployUrl] = createSignal("");
 	const [loading, setLoading] = createSignal(false);
 	const [error, setError] = createSignal("");
 
@@ -104,15 +106,43 @@ export function CreatePage() {
 	};
 
 	const deploy = async () => {
-		if (!cfToken()) {
-			setError("Please enter a Cloudflare API token.");
+		if (!cfToken() || !cfAccountId()) {
+			setError("Please enter a Cloudflare API token and account ID.");
 			return;
 		}
 		setLoading(true);
 		setError("");
-		await new Promise((r) => setTimeout(r, 1200));
-		setLoading(false);
-		setStep("done");
+		try {
+			const repoInfo = parseRepoUrl(repoUrl());
+			const res = await fetch("/api/deploy", {
+				method: "POST",
+				headers: {
+					Authorization: `Bearer ${cfToken()}`,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					accountId: cfAccountId(),
+					projectName: repo() || "my-docs",
+					owner: repoInfo?.owner,
+					repo: repoInfo?.repo,
+					productionBranch: "main",
+				}),
+			});
+			const data = (await res.json().catch(() => ({}))) as {
+				ok?: boolean;
+				url?: string;
+				error?: string;
+			};
+			if (!res.ok || data.error) {
+				throw new Error(data.error ?? `Deploy failed (${res.status})`);
+			}
+			if (data.url) setDeployUrl(data.url);
+			setStep("done");
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Deploy failed.");
+		} finally {
+			setLoading(false);
+		}
 	};
 
 	return (
@@ -310,9 +340,11 @@ export function CreatePage() {
 						Deploy to Cloudflare
 					</h2>
 					<p class="text-sm text-muted mb-4">
-						Enter your Cloudflare API token to deploy the new docs site.
+						Enter your Cloudflare credentials to create a Pages project for the
+						new docs site.
 						<span class="block mt-1 text-xs">
-							Preview — the deploy step is not wired to the Cloudflare API yet.
+							The token needs the "Cloudflare Pages: Edit" permission. Find your
+							account ID on the Cloudflare dashboard sidebar.
 						</span>
 					</p>
 					<label for="cf-token" class="block text-sm text-muted mb-1">
@@ -324,6 +356,17 @@ export function CreatePage() {
 						value={cfToken()}
 						onInput={(e) => setCfToken(e.currentTarget.value)}
 						placeholder="..."
+						class="w-full h-10 px-3 rounded-md border border-border bg-background text-foreground mb-4 outline-none focus:border-focus"
+					/>
+					<label for="cf-account" class="block text-sm text-muted mb-1">
+						Cloudflare account ID
+					</label>
+					<input
+						id="cf-account"
+						type="text"
+						value={cfAccountId()}
+						onInput={(e) => setCfAccountId(e.currentTarget.value)}
+						placeholder="a1b2c3d4..."
 						class="w-full h-10 px-3 rounded-md border border-border bg-background text-foreground mb-4 outline-none focus:border-focus"
 					/>
 					<Show when={error()}>
@@ -358,18 +401,36 @@ export function CreatePage() {
 					</div>
 					<h2 class="text-xl font-semibold mb-2">You're ready to ship!</h2>
 					<p class="text-sm text-muted mb-6">
-						Repository <code class="font-mono">{repo()}</code> created. The
-						Cloudflare deploy step above is a preview.
+						Repository <code class="font-mono">{repo()}</code> created
+						<Show when={deployUrl()}>
+							{" "}
+							and a Cloudflare Pages project is connected — the first deployment
+							runs on the next push to <code class="font-mono">main</code>.
+						</Show>
+						.
 					</p>
-					<a
-						href={repoUrl() || `https://github.com/${repo()}`}
-						target="_blank"
-						rel="noreferrer"
-						class="inline-flex items-center gap-2 px-5 h-11 rounded-md bg-primary text-primary-foreground no-underline font-medium hover:bg-primary-hover transition-colors"
-					>
-						<span class="i-mdi:github" aria-hidden="true" />
-						Open repository
-					</a>
+					<div class="flex items-center justify-center gap-3 flex-wrap">
+						<a
+							href={repoUrl() || `https://github.com/${repo()}`}
+							target="_blank"
+							rel="noreferrer"
+							class="inline-flex items-center gap-2 px-5 h-11 rounded-md bg-primary text-primary-foreground no-underline font-medium hover:bg-primary-hover transition-colors"
+						>
+							<span class="i-mdi:github" aria-hidden="true" />
+							Open repository
+						</a>
+						<Show when={deployUrl()}>
+							<a
+								href={deployUrl()}
+								target="_blank"
+								rel="noreferrer"
+								class="inline-flex items-center gap-2 px-5 h-11 rounded-md border border-border text-foreground no-underline font-medium hover:bg-background transition-colors"
+							>
+								<span class="i-mdi:cloud" aria-hidden="true" />
+								Open site
+							</a>
+						</Show>
+					</div>
 				</div>
 			</Show>
 		</div>
@@ -378,4 +439,10 @@ export function CreatePage() {
 
 function stepOrder(s: "template" | "github" | "deploy" | "done") {
 	return { template: 0, github: 1, deploy: 2, done: 3 }[s];
+}
+
+function parseRepoUrl(url: string) {
+	const match = url.match(/github\.com[:/]([^/]+)\/([^/]+)/);
+	if (!match) return null;
+	return { owner: match[1], repo: match[2].replace(/\.git$/, "") };
 }

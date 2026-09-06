@@ -1,8 +1,6 @@
-import { initTheme, mountDocsApp } from "@wrikka/create-docs/solid";
+import { mountDocsApp } from "@wrikka/create-docs/solid";
 import "virtual:uno.css";
 import { dataSource } from "./data-source";
-
-initTheme("dark");
 
 mountDocsApp({
 	site: {
@@ -137,6 +135,34 @@ mountDocsApp({
 			icon: "i-mdi:translate",
 			version: "0.1.0",
 			install: "bun add @wrikka/create-docs-i18n",
+		},
+	],
+	showcase: [
+		{
+			id: "wrikka-docs",
+			label: "Wrikka Docs",
+			description: "The documentation site you are looking at right now.",
+			icon: "i-mdi:book-open-page-variant",
+			link: "https://github.com/wrikka/bun-packages",
+			tags: ["Docs", "SolidJS"],
+			badge: "Featured",
+		},
+		{
+			id: "api-reference",
+			label: "API reference",
+			description:
+				"Scalar-style OpenAPI reference with an interactive playground.",
+			icon: "i-mdi:api",
+			tags: ["OpenAPI", "Playground"],
+			coverColor: "#7c3aed",
+		},
+		{
+			id: "cli-starter",
+			label: "CLI starter",
+			description: "Bun-powered CLI scaffold generated from the same runtime.",
+			icon: "i-mdi:console",
+			tags: ["CLI", "Bun"],
+			coverColor: "#0ea5e9",
 		},
 	],
 	i18n: { current: "en", list: [{ id: "en", label: "English" }] },

@@ -1,4 +1,4 @@
-import { createSignal, Show } from "solid-js";
+import { createSignal, onMount, Show } from "solid-js";
 import { useDocs } from "../context";
 
 const STORAGE_KEY = "create-docs:github-token";
@@ -19,13 +19,18 @@ export function clearGitHubToken() {
 }
 
 export function GitHubAuthButton(props: {
-	onToken: (token: string) => void;
+	onToken?: (token: string) => void;
 	label?: string;
 	scope?: string;
 }) {
 	const config = useDocs();
 	const [loading, setLoading] = createSignal(false);
 	const [error, setError] = createSignal("");
+
+	onMount(() => {
+		const existing = getGitHubToken();
+		if (existing) props.onToken?.(existing);
+	});
 
 	const oauth = () => config.github?.oauth;
 	const disabled = () => oauth()?.enabled === false || loading();

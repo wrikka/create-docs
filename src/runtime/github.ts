@@ -1,3 +1,4 @@
+import { getGitHubToken } from "./components/GitHubAuth";
 import type { GitHubConfig } from "./config";
 
 export interface ReleaseInfo {
@@ -53,8 +54,12 @@ export class GitHubFetchError extends Error {
 }
 
 async function fetchJson<T>(url: string): Promise<T> {
+	const token = getGitHubToken();
 	const res = await fetch(url, {
-		headers: { Accept: "application/vnd.github+json" },
+		headers: {
+			Accept: "application/vnd.github+json",
+			...(token ? { Authorization: `Bearer ${token}` } : {}),
+		},
 	});
 	const text = await res.text();
 	if (!res.ok) {

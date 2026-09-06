@@ -1,4 +1,5 @@
 import { useParams } from "@tanstack/solid-router";
+import { dump as dumpYaml } from "js-yaml";
 import { createResource, createSignal, Show } from "solid-js";
 import { DocMarkdown } from "../components/DocMarkdown";
 import { getGitHubToken } from "../components/GitHubAuth";
@@ -13,19 +14,8 @@ function repoInfo(url?: string) {
 }
 
 function stringifyFrontmatter(fm: Record<string, unknown>): string {
-	const lines = ["---"];
-	for (const [k, v] of Object.entries(fm)) {
-		if (Array.isArray(v)) {
-			lines.push(`${k}:`);
-			for (const item of v) lines.push(`  - ${item}`);
-		} else if (typeof v === "boolean" || typeof v === "number") {
-			lines.push(`${k}: ${v}`);
-		} else {
-			lines.push(`${k}: ${v}`);
-		}
-	}
-	lines.push("---");
-	return lines.join("\n");
+	const body = dumpYaml(fm, { lineWidth: -1, noRefs: true }).trimEnd();
+	return `---\n${body}\n---`;
 }
 
 export function EditPage() {
@@ -199,7 +189,7 @@ export function EditPage() {
 						</div>
 						<section
 							aria-labelledby="edit-preview-label"
-							class="flex-1 rounded-md border border-border bg-bg p-4 overflow-auto h-[70vh]"
+							class="flex-1 rounded-md border border-border bg-surface p-4 overflow-auto h-[70vh]"
 						>
 							<DocMarkdown source={source()} />
 						</section>

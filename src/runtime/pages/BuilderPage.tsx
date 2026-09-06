@@ -141,7 +141,7 @@ export function BuilderPage() {
 						</div>
 					</div>
 				</div>
-				<div class="lg:col-span-2 rounded-md border border-border bg-bg p-6 min-h-[60vh]">
+				<div class="lg:col-span-2 rounded-md border border-border bg-surface p-6 min-h-[60vh]">
 					<DocMarkdown source={markdown()} />
 				</div>
 			</div>
