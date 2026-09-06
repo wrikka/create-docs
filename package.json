@@ -66,6 +66,7 @@
 		"dev": "vite dev",
 		"dev:lib": "bun run src/index.ts",
 		"build": "bunup",
+		"build:site": "vite build && bun run scripts/generate-docs-index.ts",
 		"build:watch": "bunup --watch",
 		"typecheck": "tsc --noEmit",
 		"typecheck:watch": "tsc --noEmit --watch",

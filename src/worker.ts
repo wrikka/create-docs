@@ -9,6 +9,29 @@ interface Env {
 	GITHUB_TOKEN?: string;
 }
 
+interface DocEntry {
+	collection: string;
+	id: string;
+	title: string;
+	description: string;
+	text: string;
+	content: string;
+}
+
+let indexCache: { docs: DocEntry[] } | null = null;
+
+async function loadIndex(env: Env): Promise<{ docs: DocEntry[] }> {
+	if (indexCache) return indexCache;
+	const res = await env.ASSETS.fetch(
+		new Request("https://assets.local/search-index.json"),
+	);
+	if (!res.ok) {
+		throw new Error("search-index.json not found");
+	}
+	indexCache = (await res.json()) as { docs: DocEntry[] };
+	return indexCache;
+}
+
 async function handleGitHubProxy(
 	request: Request,
 	env: Env,
@@ -145,6 +168,110 @@ async function handleSave(request: Request, env: Env): Promise<Response> {
 	}
 }
 
+async function handleMcp(request: Request, env: Env): Promise<Response> {
+	if (request.method !== "POST") {
+		return new Response("Method not allowed", { status: 405 });
+	}
+	const body = (await request.json().catch(() => ({}))) as {
+		id?: unknown;
+		method?: string;
+		params?: Record<string, unknown>;
+	};
+	const { id = null, method, params = {} } = body;
+
+	const reply = (result: unknown) =>
+		new Response(JSON.stringify({ jsonrpc: "2.0", id, result }), {
+			headers: { "Content-Type": "application/json" },
+		});
+	const rpcError = (code: number, message: string) =>
+		new Response(
+			JSON.stringify({ jsonrpc: "2.0", id, error: { code, message } }),
+			{ headers: { "Content-Type": "application/json" } },
+		);
+
+	if (method === "initialize") {
+		return reply({
+			protocolVersion: "2024-11-05",
+			capabilities: { tools: {} },
+			serverInfo: { name: "create-docs", version: "0.1.0" },
+		});
+	}
+	if (method === "notifications/initialized" || method === "ping") {
+		return reply({});
+	}
+	if (method === "tools/list") {
+		return reply({
+			tools: [
+				{
+					name: "search_docs",
+					description: "Search documentation content",
+					inputSchema: {
+						type: "object",
+						properties: {
+							query: { type: "string", description: "Search query" },
+							limit: {
+								type: "number",
+								description: "Max results",
+								default: 5,
+							},
+						},
+						required: ["query"],
+					},
+				},
+				{
+					name: "get_doc",
+					description: "Get a document by collection and id",
+					inputSchema: {
+						type: "object",
+						properties: {
+							collection: { type: "string", description: "Collection id" },
+							id: { type: "string", description: "Document id" },
+						},
+						required: ["collection", "id"],
+					},
+				},
+			],
+		});
+	}
+	if (method === "tools/call") {
+		const name = params.name;
+		const args = (params.arguments ?? {}) as Record<string, unknown>;
+		const { docs } = await loadIndex(env);
+		if (name === "search_docs") {
+			const q = String(args.query ?? "").toLowerCase();
+			const limit = Math.min(Number(args.limit ?? 5), 20);
+			const results = docs
+				.filter((d) =>
+					[d.title, d.description, d.text].join(" ").toLowerCase().includes(q),
+				)
+				.slice(0, limit)
+				.map((d) => ({
+					collection: d.collection,
+					id: d.id,
+					title: d.title,
+					description: d.description,
+					snippet: d.text.slice(0, 200),
+				}));
+			return reply({
+				content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
+			});
+		}
+		if (name === "get_doc") {
+			const doc = docs.find(
+				(d) => d.collection === args.collection && d.id === args.id,
+			);
+			if (!doc) {
+				return rpcError(-32602, "Document not found");
+			}
+			return reply({
+				content: [{ type: "text", text: doc.content }],
+			});
+		}
+		return rpcError(-32601, "Unknown tool");
+	}
+	return rpcError(-32601, "Method not found");
+}
+
 export default {
 	async fetch(request: Request, env: Env) {
 		const url = new URL(request.url);
@@ -157,6 +284,9 @@ export default {
 			}
 			if (url.pathname.startsWith("/api/github")) {
 				return handleGitHubProxy(request, env);
+			}
+			if (url.pathname === "/api/mcp" || url.pathname === "/mcp") {
+				return handleMcp(request, env);
 			}
 			return await env.ASSETS.fetch(request);
 		} catch (e) {

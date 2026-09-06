@@ -167,12 +167,18 @@ export function CreatePage() {
 			</Show>
 
 			<Show when={step() === "github"}>
-				<div class="border border-border rounded-xl p-6 bg-surface mb-4">
+				<form
+					class="border border-border rounded-xl p-6 bg-surface mb-4"
+					onSubmit={(e) => {
+						e.preventDefault();
+						createRepo();
+					}}
+				>
 					<h2 class="font-semibold mb-4 flex items-center gap-2">
 						<span class="i-mdi:github" aria-hidden="true" />
 						Connect GitHub
 					</h2>
-					<label htmlFor="repo-name" class="block text-sm text-muted mb-1">
+					<label for="repo-name" class="block text-sm text-muted mb-1">
 						Repository name
 					</label>
 					<input
@@ -183,7 +189,7 @@ export function CreatePage() {
 						placeholder="my-docs"
 						class="w-full h-10 px-3 rounded-md border border-border bg-background text-foreground mb-4 outline-none focus:border-focus"
 					/>
-					<label htmlFor="github-token" class="block text-sm text-muted mb-1">
+					<label for="github-token" class="block text-sm text-muted mb-1">
 						GitHub personal access token
 					</label>
 					<input
@@ -206,19 +212,24 @@ export function CreatePage() {
 							Back
 						</button>
 						<button
-							type="button"
-							onClick={createRepo}
+							type="submit"
 							disabled={loading()}
 							class="px-4 h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary-hover transition-colors disabled:opacity-60"
 						>
 							{loading() ? "Creating…" : "Create repository"}
 						</button>
 					</div>
-				</div>
+				</form>
 			</Show>
 
 			<Show when={step() === "deploy"}>
-				<div class="border border-border rounded-xl p-6 bg-surface mb-4">
+				<form
+					class="border border-border rounded-xl p-6 bg-surface mb-4"
+					onSubmit={(e) => {
+						e.preventDefault();
+						deploy();
+					}}
+				>
 					<h2 class="font-semibold mb-4 flex items-center gap-2">
 						<span class="i-mdi:cloud" aria-hidden="true" />
 						Deploy to Cloudflare
@@ -226,7 +237,7 @@ export function CreatePage() {
 					<p class="text-sm text-muted mb-4">
 						Enter your Cloudflare API token to deploy the new docs site.
 					</p>
-					<label htmlFor="cf-token" class="block text-sm text-muted mb-1">
+					<label for="cf-token" class="block text-sm text-muted mb-1">
 						Cloudflare API token
 					</label>
 					<input
@@ -249,15 +260,14 @@ export function CreatePage() {
 							Back
 						</button>
 						<button
-							type="button"
-							onClick={deploy}
+							type="submit"
 							disabled={loading()}
 							class="px-4 h-10 rounded-md bg-primary text-primary-foreground hover:bg-primary-hover transition-colors disabled:opacity-60"
 						>
 							{loading() ? "Deploying…" : "Deploy to Cloudflare"}
 						</button>
 					</div>
-				</div>
+				</form>
 			</Show>
 
 			<Show when={step() === "done"}>
