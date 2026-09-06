@@ -7,21 +7,21 @@ import {
 	Show,
 } from "solid-js";
 import { useDocs } from "../context";
-import { useCollections } from "../data";
+import { searchDocs, useCollections } from "../data";
 
 export const [searchOpen, setSearchOpen] = createSignal(false);
 
 export function SearchPalette() {
 	const navigate = useNavigate();
 	const collections = useCollections();
-	const dataSource = useDocs().dataSource;
+	const config = useDocs();
 	const [query, setQuery] = createSignal("");
 	const [selected, setSelected] = createSignal(0);
 	let inputEl: HTMLInputElement | undefined;
 
 	const [results] = createResource(query, async (q) => {
 		if (!q || q.trim().length < 2) return [];
-		return dataSource.search(q.trim());
+		return searchDocs(config, q.trim());
 	});
 
 	createEffect(() => {

@@ -27,15 +27,39 @@ export interface DocsAppFeatures {
 	search?: boolean;
 	askAi?: boolean;
 	editLink?: boolean;
+	lastUpdated?: boolean;
 	themeToggle?: boolean;
+	breadcrumbs?: boolean;
+	reportIssue?: boolean;
+	openPR?: boolean;
+	rss?: boolean;
+	sitemap?: boolean;
+	pwa?: boolean;
 }
 
 export interface MarkdownConfig {
 	engine?: "comark" | "marked";
 }
 
+export interface GitHubConfig {
+	owner: string;
+	repo: string;
+	branch?: string;
+	stats?: boolean;
+	releases?: boolean;
+	contributors?: boolean;
+}
+
 export interface DocsAppConfig {
-	site: { title: string; description?: string; repoUrl?: string };
+	site: {
+		title: string;
+		description?: string;
+		repoUrl?: string;
+		url?: string;
+		ogImage?: string;
+	};
+	/** GitHub integration options. */
+	github?: GitHubConfig;
 	/** Injected data source for markdown doc collections. */
 	dataSource: import("./types").DocsDataSource;
 	/** Default collection used for "/" redirect when no home config. */

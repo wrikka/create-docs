@@ -21,6 +21,8 @@ export interface DocEntry {
 	category: string;
 	description: string;
 	path: string;
+	/** Optional last updated ISO timestamp. */
+	lastUpdated?: string;
 	type: "rust" | "npm" | "api" | "md";
 }
 

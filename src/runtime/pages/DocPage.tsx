@@ -1,25 +1,39 @@
 import { useParams } from "@tanstack/solid-router";
 import { createResource, createSignal, Show } from "solid-js";
 import { AskAiDialog } from "../components/AskAiDialog";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 import { DocMarkdown } from "../components/DocMarkdown";
 import { DocPrevNext } from "../components/DocPrevNext";
 import { DocToc } from "../components/DocToc";
 import { PageActions } from "../components/PageActions";
 import { useDocs } from "../context";
-import { createDocsList, useCollections } from "../data";
+import { createDocsList } from "../data";
+
+function formatLastUpdated(iso?: string) {
+	if (!iso) return "";
+	try {
+		return new Date(iso).toLocaleDateString(undefined, {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+		});
+	} catch {
+		return "";
+	}
+}
 
 export function DocPage() {
 	const params = useParams({ strict: false });
 	const collection = () => params().collection ?? "";
 	const docId = () => params().docId ?? "";
 	const [askOpen, setAskOpen] = createSignal(false);
-	const collections = useCollections();
+	const config = useDocs();
 	const dataSource = useDocs().dataSource;
+	const showBreadcrumbs = () => config.features?.breadcrumbs !== false;
+	const showLastUpdated = () => config.features?.lastUpdated !== false;
 
 	const [docs] = createDocsList(collection);
 	const meta = () => (docs() ?? []).find((d) => d.id === docId());
-	const collectionMeta = () =>
-		collections()?.find((c) => c.id === collection());
 
 	const [doc] = createResource(
 		() => ({ collection: collection(), id: docId() }),
@@ -35,24 +49,13 @@ export function DocPage() {
 				<Show when={meta()}>
 					{(m) => (
 						<>
-							<div class="flex items-center gap-1.5 text-xs text-muted pb-3">
-								<span
-									class={collectionMeta()?.icon ?? "i-mdi:folder-outline"}
-									aria-hidden="true"
+							<Show when={showBreadcrumbs()}>
+								<Breadcrumbs
+									collection={collection()}
+									category={m().category}
+									label={m().label}
 								/>
-								<span>{collectionMeta()?.label ?? collection()}</span>
-								<span class="i-mdi:chevron-right" aria-hidden="true" />
-								<span>{m().category}</span>
-								<span class="i-mdi:chevron-right" aria-hidden="true" />
-								<span class="text-foreground font-medium">{m().label}</span>
-								<span
-									class={`ml-auto inline-flex items-center px-2 py-0.5 rounded-full border border-border text-[11px] uppercase tracking-wide ${
-										m().type === "rust" ? "text-warning" : "text-accent"
-									}`}
-								>
-									{m().type}
-								</span>
-							</div>
+							</Show>
 							<div class="flex items-center gap-2 pb-4 mb-2 border-b border-border flex-wrap">
 								<PageActions
 									collection={collection()}
@@ -72,6 +75,11 @@ export function DocPage() {
 									<code class="font-mono truncate">{m().path}</code>
 								</span>
 							</div>
+							<Show when={showLastUpdated() && m().lastUpdated}>
+								<div class="text-xs text-muted pb-4">
+									Last updated: {formatLastUpdated(m().lastUpdated)}
+								</div>
+							</Show>
 						</>
 					)}
 				</Show>

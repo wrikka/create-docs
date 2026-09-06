@@ -90,6 +90,7 @@
 		"js-yaml": "^5.4.1",
 		"katex": "^0.18.6",
 		"marked": "^18.0.11",
+		"minisearch": "^7.2.0",
 		"monaco-editor": "catalog:",
 		"rangi": "^2.2.0",
 		"simple-git": "^3.36.0",
