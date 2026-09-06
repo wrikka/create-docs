@@ -6,7 +6,8 @@ export interface SeoInput {
 	docs: Map<string, DocEntry[]>;
 }
 
-function escapeXml(text: string) {
+function escapeXml(text?: string | null) {
+	if (text == null) return "";
 	return text
 		.replace(/&/g, "&amp;")
 		.replace(/</g, "&lt;")
