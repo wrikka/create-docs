@@ -1,19 +1,21 @@
 // Export Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Export Format Schema
  */
-export const exportFormatSchema = type("'pdf' | 'html' | 'markdown' | 'json'");
+export const exportFormatSchema: Type = type(
+	"'pdf' | 'html' | 'markdown' | 'json'",
+);
 
 export type ExportFormat = typeof exportFormatSchema.infer;
 
 /**
  * Filename Schema
  */
-export const filenameSchema = type("string >= 1");
+export const filenameSchema: Type = type("string >= 1");
 
 export type Filename = typeof filenameSchema.infer;
 

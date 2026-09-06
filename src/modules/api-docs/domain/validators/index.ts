@@ -1,12 +1,12 @@
 // API Docs Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * API Path Schema
  */
-export const apiPathSchema = type("string >= 1").narrow((path: string) =>
+export const apiPathSchema: Type = type("string >= 1").narrow((path: string) =>
 	path.startsWith("/"),
 );
 
@@ -15,7 +15,7 @@ export type ApiPath = typeof apiPathSchema.infer;
 /**
  * HTTP Method Schema
  */
-export const httpMethodSchema = type(
+export const httpMethodSchema: Type = type(
 	"'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'",
 );
 

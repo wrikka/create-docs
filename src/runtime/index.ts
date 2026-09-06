@@ -141,10 +141,13 @@ export type {
 	ApiParameter,
 	AskInput,
 	AskResult,
+	CliArg,
+	CliEndpoint,
 	CollectionMeta,
 	DocContent,
 	DocEntry,
 	DocsDataSource,
+	GraphQlEndpoint,
 	HttpMethod,
 	SearchResult,
 } from "./types";

@@ -4,12 +4,15 @@ export type VirtualModuleId = Brand<string, "VirtualModuleId">;
 export const VirtualModuleId = (s: string): VirtualModuleId =>
 	s as VirtualModuleId;
 
-export const VIRTUAL_DATA = VirtualModuleId("virtual:docs/data");
-export const VIRTUAL_SEARCH_INDEX = VirtualModuleId(
+export const VIRTUAL_DATA: VirtualModuleId =
+	VirtualModuleId("virtual:docs/data");
+export const VIRTUAL_SEARCH_INDEX: VirtualModuleId = VirtualModuleId(
 	"virtual:docs/search-index",
 );
-export const VIRTUAL_SIDEBAR = VirtualModuleId("virtual:docs/sidebar");
-export const VIRTUAL_NAV = VirtualModuleId("virtual:docs/nav");
+export const VIRTUAL_SIDEBAR: VirtualModuleId = VirtualModuleId(
+	"virtual:docs/sidebar",
+);
+export const VIRTUAL_NAV: VirtualModuleId = VirtualModuleId("virtual:docs/nav");
 
 export interface PluginContext {
 	readonly root: string;

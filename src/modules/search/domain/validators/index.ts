@@ -3,13 +3,13 @@
 
 import { validationError } from "@create-docs/shared/errors";
 import { err, ok, type Result } from "@create-docs/shared/types/result";
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 import type { SearchEntry } from "../../types";
 
 /**
  * Search Entry Schema
  */
-export const searchEntrySchema = type({
+export const searchEntrySchema: Type = type({
 	id: "string >= 1",
 	slug: "string >= 1",
 	title: "string >= 1",

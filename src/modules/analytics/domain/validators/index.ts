@@ -1,19 +1,19 @@
 // Analytics Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Path Schema
  */
-export const pathSchema = type("string >= 1");
+export const pathSchema: Type = type("string >= 1");
 
 export type Path = typeof pathSchema.infer;
 
 /**
  * Search Query Schema
  */
-export const searchQuerySchema = type("string >= 1");
+export const searchQuerySchema: Type = type("string >= 1");
 
 export type SearchQuery = typeof searchQuerySchema.infer;
 

@@ -1,19 +1,19 @@
 // Comments Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Author Schema
  */
-export const authorSchema = type("string >= 1");
+export const authorSchema: Type = type("string >= 1");
 
 export type Author = typeof authorSchema.infer;
 
 /**
  * Content Schema
  */
-export const contentSchema = type("string >= 1");
+export const contentSchema: Type = type("string >= 1");
 
 export type Content = typeof contentSchema.infer;
 

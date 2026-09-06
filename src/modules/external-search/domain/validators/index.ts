@@ -1,12 +1,12 @@
 // External Search Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Search Endpoint Schema
  */
-export const searchEndpointSchema = type("string >= 1").narrow(
+export const searchEndpointSchema: Type = type("string >= 1").narrow(
 	(endpoint: string) =>
 		endpoint.startsWith("http://") || endpoint.startsWith("https://"),
 );
@@ -16,7 +16,7 @@ export type SearchEndpoint = typeof searchEndpointSchema.infer;
 /**
  * Search URL Schema
  */
-export const searchUrlSchema = type("string >= 1").narrow(
+export const searchUrlSchema: Type = type("string >= 1").narrow(
 	(url: string) => url.startsWith("http://") || url.startsWith("https://"),
 );
 

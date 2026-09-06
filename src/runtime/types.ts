@@ -1,118 +1,57 @@
-/**
- * Runtime types for the create-docs Solid app shell.
- *
- * A consumer injects a {@link DocsDataSource} so the UI stays
- * source-agnostic: oRPC, static manifest, CMS, anything.
- */
+/** One Markdown document. */
+export interface DocContent {
+	id: string;
+	label: string;
+	content: string;
+	category?: string;
+	order?: number;
+	icon?: string;
+	/** Optional badge shown in sidebar and search. */
+	badge?: string;
+	description?: string;
+	path?: string;
+	/** Optional tags for grouping/filtering. */
+	tags?: string[];
+	/** ISO date if available. */
+	date?: string;
+	/** Last-updated ISO timestamp. */
+	lastUpdated?: string;
+	/** Frontmatter values parsed from the file. */
+	frontmatter?: Record<string, unknown>;
+}
 
+export interface DocEntry extends DocContent {
+	/** Support nested sidebar submenus. */
+	children?: DocEntry[];
+	type?: "doc" | "api" | "showcase";
+}
+
+/** Minimal collection metadata. */
 export interface CollectionMeta {
 	id: string;
 	label: string;
 	icon?: string;
 	description?: string;
-	repoUrl?: string;
-	/** "docs" renders markdown pages, "api" renders the API reference layout. */
-	type?: "docs" | "api";
-	/** Sidebar sections (from `_dir.yml` or manual config) — ordered nav groups. */
-	sections?: {
-		id: string;
-		label: string;
-		icon?: string;
-		order?: number;
-		collapsed?: boolean;
-	}[];
+	/** Collection type used to switch rendering. */
+	type?: "docs" | "api" | "showcase";
 }
 
-export interface DocSeo {
-	title?: string;
-	description?: string;
-	image?: string;
-	ogType?: "article" | "website";
-	noIndex?: boolean;
-}
-
-/** Frontmatter parsed from a markdown document. */
-export interface DocFrontmatter {
-	title?: string;
-	description?: string;
-	/** Sort order within the sidebar/category. */
-	order?: number;
-	/** Sidebar category override. */
-	category?: string;
-	/** Hide from lists, search, sitemap and feeds (still renderable in dev). */
-	draft?: boolean;
-	/** ISO date — doc is hidden until this time (scheduled publishing). */
-	publishedAt?: string;
-	/** ISO date — shown as "last updated". */
-	lastUpdated?: string;
-	tags?: string[];
-	/** Small badge shown next to the sidebar label. */
-	badge?: string;
-	/** Iconify icon class for the sidebar entry. */
-	icon?: string;
-	/** Page-level overrides. */
-	toc?: boolean;
-	aside?: boolean;
-	editLink?: boolean;
-	layout?: "doc" | "page" | "home";
-	/** Per-page SEO overrides. */
-	seo?: DocSeo;
-	[key: string]: unknown;
-}
-
-export interface DocEntry {
-	id: string;
-	label: string;
-	category: string;
-	description: string;
-	path: string;
-	/** Optional last updated ISO timestamp. */
-	lastUpdated?: string;
-	/** Original publication timestamp (ISO). */
-	publishedAt?: string;
-	/** Sidebar ordering hint. */
-	order?: number;
-	tags?: string[];
-	/** Sidebar badge text. */
-	badge?: string;
-	/** Sidebar icon class. */
-	icon?: string;
-	/** Excluded from listings when the source filters drafts. */
-	draft?: boolean;
-	/** Per-page SEO overrides. */
-	seo?: DocSeo;
-	/** Optional nested sidebar items — renders as a collapsible submenu. */
-	children?: DocEntry[];
-	type: "rust" | "npm" | "api" | "md";
-}
-
-export interface DocContent {
-	content: string;
-	frontmatter?: DocFrontmatter;
-	/** Original file path relative to the collection directory (used by the editor). */
-	path?: string;
-}
-
-/** Nuxt Content-style query over a data source. */
-export interface DocQuery {
-	collection?: string;
-	/** Filters — all provided fields must match. */
-	where?: {
-		category?: string;
-		tag?: string;
-		draft?: boolean;
-	};
-	sort?: "title" | "order" | "lastUpdated" | "id";
-	order?: "asc" | "desc";
-	limit?: number;
-}
-
+/** Search result returned from buildSearchIndex(). */
 export interface SearchResult {
 	collection: string;
 	id: string;
 	title: string;
 	snippet: string;
 	score: number;
+}
+
+export interface DocsDataSource {
+	/** Available collections. */
+	collections(): Promise<CollectionMeta[]> | CollectionMeta[];
+	/** List all documents in a collection. */
+	list(collection: string): Promise<DocEntry[]> | DocEntry[];
+	/** Fetch a single document. */
+	get(collection: string, id: string): Promise<DocContent> | DocContent;
 }
 
 export interface AskInput {
@@ -123,18 +62,7 @@ export interface AskInput {
 
 export interface AskResult {
 	answer: string;
-}
-
-/** Port — the app shell only talks to this interface. */
-export interface DocsDataSource {
-	collections(): Promise<CollectionMeta[]>;
-	list(collection: string): Promise<DocEntry[]>;
-	get(collection: string, id: string): Promise<DocContent>;
-	search(q: string, collection?: string): Promise<SearchResult[]>;
-	/** Optional — enables the Ask AI button when present. */
-	ask?(input: AskInput): Promise<AskResult>;
-	/** Optional — Nuxt Content-style filtered/sorted document listing. */
-	query?(q: DocQuery): Promise<DocEntry[]>;
+	cost?: { tokens?: number; ms?: number };
 }
 
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -146,6 +74,30 @@ export interface ApiParameter {
 	description?: string;
 	schema?: unknown;
 	example?: unknown;
+}
+
+export interface GraphQlEndpoint {
+	/** GraphQL operation name. */
+	operation?: string;
+	/** GraphQL query or mutation. */
+	query: string;
+	/** Example / schema for variables. */
+	variables?: Record<string, unknown>;
+}
+
+export interface CliArg {
+	name: string;
+	required: boolean;
+	description?: string;
+	example?: string;
+}
+
+export interface CliEndpoint {
+	/** Base command, e.g. "wrikka". */
+	command: string;
+	/** Subcommand, e.g. "create". */
+	subcommand?: string;
+	args?: CliArg[];
 }
 
 export interface ApiEndpoint {
@@ -165,4 +117,8 @@ export interface ApiEndpoint {
 	responses: Record<string, { description: string; example?: unknown }>;
 	/** Absolute base URL used by the playground. Defaults to origin. */
 	server?: string;
+	/** GraphQL-specific payload. */
+	graphql?: GraphQlEndpoint;
+	/** CLI-specific payload. */
+	cli?: CliEndpoint;
 }

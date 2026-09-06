@@ -1,19 +1,19 @@
 // Workflow Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Step Name Schema
  */
-export const stepNameSchema = type("string >= 1");
+export const stepNameSchema: Type = type("string >= 1");
 
 export type StepName = typeof stepNameSchema.infer;
 
 /**
  * Workflow Name Schema
  */
-export const workflowNameSchema = type("string >= 1");
+export const workflowNameSchema: Type = type("string >= 1");
 
 export type WorkflowName = typeof workflowNameSchema.infer;
 

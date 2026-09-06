@@ -1,19 +1,19 @@
 // Image Optimization Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Image Path Schema
  */
-export const imagePathSchema = type("string >= 1");
+export const imagePathSchema: Type = type("string >= 1");
 
 export type ImagePath = typeof imagePathSchema.infer;
 
 /**
  * Quality Schema
  */
-export const qualitySchema = type("number >= 0").narrow(
+export const qualitySchema: Type = type("number >= 0").narrow(
 	(quality: number) => quality <= 100,
 );
 

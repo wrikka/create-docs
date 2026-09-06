@@ -1,12 +1,12 @@
 // I18n Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Locale Code Schema
  */
-export const localeCodeSchema = type("string").narrow(
+export const localeCodeSchema: Type = type("string").narrow(
 	(code: string) => code.length === 2,
 );
 
@@ -15,7 +15,7 @@ export type LocaleCode = typeof localeCodeSchema.infer;
 /**
  * Translation Key Schema
  */
-export const translationKeySchema = type("string >= 1");
+export const translationKeySchema: Type = type("string >= 1");
 
 export type TranslationKey = typeof translationKeySchema.infer;
 

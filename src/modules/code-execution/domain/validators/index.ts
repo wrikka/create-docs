@@ -1,19 +1,19 @@
 // Code Execution Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Language Schema
  */
-export const languageSchema = type("string >= 1");
+export const languageSchema: Type = type("string >= 1");
 
 export type Language = typeof languageSchema.infer;
 
 /**
  * Code Schema
  */
-export const codeSchema = type("string >= 1");
+export const codeSchema: Type = type("string >= 1");
 
 export type Code = typeof codeSchema.infer;
 

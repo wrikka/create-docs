@@ -4,13 +4,13 @@
 import { API_AUTH_TYPES } from "@create-docs/shared/constants";
 import { type AppError, configError } from "@create-docs/shared/errors";
 import { err, ok, type Result } from "@create-docs/shared/types/result";
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 import type { ApiEndpoint, DocsConfig } from "../../types";
 
 /**
  * Site Schema
  */
-export const siteSchema = type({
+export const siteSchema: Type = type({
 	title: "string >= 1",
 	description: "string >= 1",
 });
@@ -18,7 +18,7 @@ export const siteSchema = type({
 /**
  * API Schema
  */
-export const apiSchema = type({
+export const apiSchema: Type = type({
 	baseUrl: "string >= 1",
 	authType: type("'bearer' | 'apiKey' | 'oauth2'"),
 });
@@ -26,7 +26,7 @@ export const apiSchema = type({
 /**
  * API Endpoint Schema
  */
-export const apiEndpointSchema = type({
+export const apiEndpointSchema: Type = type({
 	method: type("'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH'"),
 	path: "string >= 1",
 	description: "string >= 1",

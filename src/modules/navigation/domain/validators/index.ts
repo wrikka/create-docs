@@ -3,7 +3,7 @@
 
 import { validationError } from "@create-docs/shared/errors";
 import { err, ok, type Result } from "@create-docs/shared/types/result";
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 import type {
 	NavItem,
 	NavSection,
@@ -14,7 +14,7 @@ import type {
 /**
  * Nav Item Schema
  */
-export const navItemSchema = type({
+export const navItemSchema: Type = type({
 	label: "string >= 1",
 	"href?": "string >= 1",
 });
@@ -22,7 +22,7 @@ export const navItemSchema = type({
 /**
  * Nav Section Schema
  */
-export const navSectionSchema = type({
+export const navSectionSchema: Type = type({
 	title: "string >= 1",
 	items: "unknown[]",
 });
@@ -30,7 +30,7 @@ export const navSectionSchema = type({
 /**
  * Sidebar Item Schema
  */
-export const sidebarItemSchema = type({
+export const sidebarItemSchema: Type = type({
 	title: "string >= 1",
 	slug: "string >= 1",
 });
@@ -38,7 +38,7 @@ export const sidebarItemSchema = type({
 /**
  * Sidebar Group Schema
  */
-export const sidebarGroupSchema = type({
+export const sidebarGroupSchema: Type = type({
 	title: "string >= 1",
 	items: "unknown[]",
 });

@@ -1,19 +1,19 @@
 // Version Control Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Version Number Schema
  */
-export const versionNumberSchema = type(/^\d+\.\d+\.\d+$/);
+export const versionNumberSchema: Type = type(/^\d+\.\d+\.\d+$/);
 
 export type VersionNumber = typeof versionNumberSchema.infer;
 
 /**
  * Author Schema
  */
-export const authorSchema = type("string >= 1");
+export const authorSchema: Type = type("string >= 1");
 
 export type Author = typeof authorSchema.infer;
 

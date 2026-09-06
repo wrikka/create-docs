@@ -1,19 +1,19 @@
 // Live Editor Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Content Schema
  */
-export const contentSchema = type("string");
+export const contentSchema: Type = type("string");
 
 export type Content = typeof contentSchema.infer;
 
 /**
  * Cursor Position Schema
  */
-export const cursorPositionSchema = type({
+export const cursorPositionSchema: Type = type({
 	line: "number >= 0",
 	column: "number >= 0",
 });

@@ -1,19 +1,19 @@
 // Content Linting Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Rule Name Schema
  */
-export const ruleNameSchema = type("string >= 1");
+export const ruleNameSchema: Type = type("string >= 1");
 
 export type RuleName = typeof ruleNameSchema.infer;
 
 /**
  * Severity Schema
  */
-export const severitySchema = type("'error' | 'warning' | 'info'");
+export const severitySchema: Type = type("'error' | 'warning' | 'info'");
 
 export type Severity = typeof severitySchema.infer;
 

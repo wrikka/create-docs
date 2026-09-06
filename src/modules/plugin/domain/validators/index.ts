@@ -4,12 +4,12 @@
 import type { ResolvedDocsConfig } from "@create-docs/modules/config";
 import { pluginError } from "@create-docs/shared/errors";
 import { err, ok, type Result } from "@create-docs/shared/types/result";
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Resolved Config Schema
  */
-export const resolvedConfigSchema = type({
+export const resolvedConfigSchema: Type = type({
 	docsDir: "string >= 1",
 	baseRoute: "string >= 1",
 });

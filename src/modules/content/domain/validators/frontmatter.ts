@@ -4,13 +4,13 @@
 import { BADGE_VARIANTS } from "@create-docs/shared/constants";
 import { validationError } from "@create-docs/shared/errors";
 import { err, ok, type Result } from "@create-docs/shared/types/result";
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 import type { BadgeVariant, Frontmatter } from "../../types";
 
 /**
  * Badge Variant Schema
  */
-export const badgeVariantSchema = type(
+export const badgeVariantSchema: Type = type(
 	"'default' | 'primary' | 'success' | 'warning' | 'danger'",
 );
 
@@ -19,14 +19,14 @@ export type BadgeVariantSchema = typeof badgeVariantSchema.infer;
 /**
  * Title Schema
  */
-export const titleSchema = type("string").narrow(
+export const titleSchema: Type = type("string").narrow(
 	(title: string) => title.trim().length > 0,
 );
 
 /**
  * Order Schema
  */
-export const orderSchema = type("number").narrow((order: number) =>
+export const orderSchema: Type = type("number").narrow((order: number) =>
 	Number.isFinite(order),
 );
 

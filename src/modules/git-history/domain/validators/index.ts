@@ -1,19 +1,19 @@
 // Git History Domain Schemas - Arktype validation schemas
 // Following /follow-arktype workflow for type-safe runtime validation
 
-import { type } from "arktype";
+import { type Type, type } from "arktype";
 
 /**
  * Commit Hash Schema
  */
-export const commitHashSchema = type(/^[a-f0-9]{40}$/);
+export const commitHashSchema: Type = type(/^[a-f0-9]{40}$/);
 
 export type CommitHash = typeof commitHashSchema.infer;
 
 /**
  * Branch Name Schema
  */
-export const branchNameSchema = type("string >= 1");
+export const branchNameSchema: Type = type("string >= 1");
 
 export type BranchName = typeof branchNameSchema.infer;
 
