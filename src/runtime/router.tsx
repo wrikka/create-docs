@@ -4,14 +4,19 @@ import {
 	createRouter,
 	redirect,
 } from "@tanstack/solid-router";
+import { trackPageView } from "./analytics";
 import type { DocsAppConfig } from "./config";
 import { findApiCollection } from "./context";
 import { DocsLayout } from "./layouts/DocsLayout";
+import { AnalyticsPage } from "./pages/AnalyticsPage";
+import { ApiDiffPage } from "./pages/ApiDiffPage";
 import { ApiEndpointPage } from "./pages/ApiEndpointPage";
 import { ChangelogPage } from "./pages/ChangelogPage";
 import { CollectionPage } from "./pages/CollectionPage";
+import { CommunityPage } from "./pages/CommunityPage";
 import { DocPage } from "./pages/DocPage";
 import { HomePage } from "./pages/HomePage";
+import { PluginsPage } from "./pages/PluginsPage";
 
 export function createDocsRouter(config: DocsAppConfig) {
 	const rootRoute = createRootRoute({
@@ -67,6 +72,42 @@ export function createDocsRouter(config: DocsAppConfig) {
 		extraRoutes.push(changelogRoute);
 	}
 
+	if (config.github?.contributors) {
+		const communityRoute = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "/community",
+			component: CommunityPage,
+		});
+		extraRoutes.push(communityRoute);
+	}
+
+	if (config.features?.analytics) {
+		const analyticsRoute = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "/analytics",
+			component: AnalyticsPage,
+		});
+		extraRoutes.push(analyticsRoute);
+	}
+
+	if (config.apiDiff) {
+		const apiDiffRoute = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "/api-diff",
+			component: ApiDiffPage,
+		});
+		extraRoutes.push(apiDiffRoute);
+	}
+
+	if (config.plugins?.length) {
+		const pluginsRoute = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "/plugins",
+			component: PluginsPage,
+		});
+		extraRoutes.push(pluginsRoute);
+	}
+
 	const routeTree = rootRoute.addChildren([
 		indexRoute,
 		collectionRoute,
@@ -74,9 +115,17 @@ export function createDocsRouter(config: DocsAppConfig) {
 		...extraRoutes,
 	]);
 
-	return createRouter({
+	const router = createRouter({
 		routeTree,
 		defaultPreload: "intent",
 		scrollRestoration: true,
 	});
+
+	if (config.features?.analytics) {
+		router.subscribe("onResolved", ({ toLocation }) => {
+			trackPageView(toLocation.pathname, config.analytics?.endpoint);
+		});
+	}
+
+	return router;
 }

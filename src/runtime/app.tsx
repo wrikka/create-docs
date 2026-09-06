@@ -3,12 +3,14 @@ import type { JSX } from "solid-js";
 import { render } from "solid-js/web";
 import type { DocsAppConfig } from "./config";
 import { DocsProvider } from "./context";
+import { setupPwa } from "./pwa";
 import { createDocsRouter } from "./router";
 import "./theme.css";
 import "./markdown-content.css";
 
 /** App root component factory — mount with your own render call. */
 export function createDocsApp(config: DocsAppConfig): () => JSX.Element {
+	setupPwa(config);
 	const router = createDocsRouter(config);
 	return () => (
 		<DocsProvider config={config}>

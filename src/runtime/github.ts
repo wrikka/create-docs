@@ -100,6 +100,25 @@ export async function fetchCommits(
 	}));
 }
 
+export interface MilestoneInfo {
+	number: number;
+	title: string;
+	description: string | null;
+	state: string;
+	open_issues: number;
+	closed_issues: number;
+	due_on: string | null;
+	html_url: string;
+}
+
+export async function fetchMilestones(
+	config: GitHubConfig,
+): Promise<MilestoneInfo[]> {
+	return fetchJson<MilestoneInfo[]>(
+		githubApiUrl(config, "/milestones?state=all&per_page=50"),
+	);
+}
+
 export function shieldsBadge(
 	owner: string,
 	repo: string,

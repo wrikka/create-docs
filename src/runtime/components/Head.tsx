@@ -64,11 +64,17 @@ export function Head() {
 		const ogImage = site.ogImage || `${siteUrl}/og-image.png`;
 
 		document.title = title;
+		if (config.i18n?.current) {
+			document.documentElement.lang = config.i18n.current;
+		}
 		setMeta("description", description);
 		setMeta("og:title", title, true);
 		setMeta("og:description", description, true);
 		setMeta("og:url", canonical, true);
 		setMeta("og:image", ogImage, true);
+		if (config.i18n?.current) {
+			setMeta("og:locale", config.i18n.current.replace("-", "_"), true);
+		}
 		setMeta("twitter:card", "summary_large_image");
 		setMeta("twitter:title", title);
 		setMeta("twitter:description", description);

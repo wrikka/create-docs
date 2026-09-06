@@ -3,7 +3,11 @@
 	"description": "Vite plugin for documentation sites built on Functional Clean Architecture with SolidJS support",
 	"version": "0.1.0",
 	"type": "module",
+	"bin": {
+		"create-docs": "./bin/cli.js"
+	},
 	"files": [
+		"bin",
 		"dist",
 		"src",
 		"README.md",

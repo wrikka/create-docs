@@ -81,6 +81,51 @@ const codeGroupComponent: NodeHandler = async (node, state) => {
 </div>`;
 };
 
+const playgroundComponent: NodeHandler = async (node, state) => {
+	const [, , ...children] = node;
+	if (!children.length) return "";
+	const el = children[0] as ElementNode;
+	if (el[0] !== "pre") return await state.render(children);
+	const html = await state.render(el);
+	const id = `pg-${Math.random().toString(36).slice(2, 8)}`;
+	return `<div class="rt-playground" data-playground="${id}">
+	<div class="rt-playground__preview" data-preview="${id}"></div>
+	<details class="rt-playground__source" open>
+		<summary>Source</summary>
+		${html}
+	</details>
+</div>`;
+};
+
+const stepsComponent: NodeHandler = async (node, state) => {
+	const [, , ...children] = node;
+	const items: string[] = [];
+	for (const child of children) {
+		const el = child as ElementNode;
+		if (el[0] === "ol" || el[0] === "ul") {
+			const [, , ...listItems] = el;
+			for (const li of listItems) {
+				const liEl = li as ElementNode;
+				if (liEl[0] !== "li") continue;
+				const [, , ...liChildren] = liEl;
+				items.push(await state.render(liChildren));
+			}
+		}
+	}
+	if (!items.length) return await state.render(children);
+	const id = `steps-${Math.random().toString(36).slice(2, 8)}`;
+	return `<ol class="rt-steps" data-steps="${id}">
+	${items
+		.map(
+			(body, i) => `<li class="rt-steps__item" data-step="${i}">
+		<span class="rt-steps__marker" aria-hidden="true">${i + 1}</span>
+		<div class="rt-steps__body">${body}</div>
+	</li>`,
+		)
+		.join("")}
+</ol>`;
+};
+
 async function buildRenderer(features: {
 	math: boolean;
 	mermaid: boolean;
@@ -111,6 +156,8 @@ async function buildRenderer(features: {
 	const components: Record<string, NodeHandler> = {
 		blockquote: blockquoteComponent,
 		"code-group": codeGroupComponent,
+		playground: playgroundComponent,
+		steps: stepsComponent,
 	};
 
 	if (features.mermaid) {
@@ -207,6 +254,65 @@ function enhanceMarkdown(el: HTMLDivElement) {
 					p.classList.toggle("rt-code-group__panel--active", p.id === target);
 				}
 			});
+		}
+	}
+
+	const playgrounds = el.querySelectorAll<HTMLDivElement>(".rt-playground");
+	for (const pg of playgrounds) {
+		if (pg.dataset.enhanced) continue;
+		pg.dataset.enhanced = "1";
+		const previewEl = pg.querySelector<HTMLDivElement>("[data-preview]");
+		const pre = pg.querySelector("pre");
+		const code = pre?.querySelector("code");
+		if (!previewEl || !pre || !code) continue;
+
+		const iframe = document.createElement("iframe");
+		iframe.setAttribute("sandbox", "allow-scripts");
+		iframe.setAttribute("title", "Playground preview");
+		iframe.className = "rt-playground__frame";
+		iframe.srcdoc = code.textContent ?? "";
+		previewEl.appendChild(iframe);
+
+		const source = pre;
+		source.setAttribute("contenteditable", "true");
+		source.setAttribute("spellcheck", "false");
+		source.addEventListener("input", () => {
+			iframe.srcdoc = source.textContent ?? "";
+		});
+	}
+
+	const stepsKey = `create-docs:steps:${location.pathname}`;
+	let savedSteps: number[] = [];
+	try {
+		savedSteps = JSON.parse(localStorage.getItem(stepsKey) ?? "[]");
+	} catch {
+		savedSteps = [];
+	}
+	const stepLists = el.querySelectorAll<HTMLOListElement>(".rt-steps");
+	for (const list of stepLists) {
+		if (list.dataset.enhanced) continue;
+		list.dataset.enhanced = "1";
+		const items = list.querySelectorAll<HTMLLIElement>(".rt-steps__item");
+		for (const item of items) {
+			const idx = Number(item.dataset.step);
+			const box = document.createElement("input");
+			box.type = "checkbox";
+			box.className = "rt-steps__check";
+			box.checked = savedSteps.includes(idx);
+			box.setAttribute("aria-label", `Mark step ${idx + 1} complete`);
+			item.classList.toggle("rt-steps__item--done", box.checked);
+			box.addEventListener("change", () => {
+				item.classList.toggle("rt-steps__item--done", box.checked);
+				const done = Array.from(items)
+					.filter((it) => it.classList.contains("rt-steps__item--done"))
+					.map((it) => Number(it.dataset.step));
+				try {
+					localStorage.setItem(stepsKey, JSON.stringify(done));
+				} catch {
+					// storage unavailable — progress not persisted
+				}
+			});
+			item.insertBefore(box, item.firstChild);
 		}
 	}
 }

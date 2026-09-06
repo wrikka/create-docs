@@ -2,8 +2,10 @@ import { Link, useParams } from "@tanstack/solid-router";
 import { Show } from "solid-js";
 import { useDocs } from "../context";
 import { CollectionDropdown } from "./CollectionDropdown";
+import { LocaleDropdown } from "./LocaleDropdown";
 import { setSearchOpen } from "./SearchPalette";
 import { ThemeToggle } from "./ThemeToggle";
+import { VersionDropdown } from "./VersionDropdown";
 
 export function TopNav(props: { onMenuToggle: () => void }) {
 	const params = useParams({ strict: false });
@@ -31,6 +33,32 @@ export function TopNav(props: { onMenuToggle: () => void }) {
 			</Link>
 			<div class="w-px h-6 bg-border hidden sm:block" aria-hidden="true" />
 			<CollectionDropdown current={params().collection} />
+			<nav class="hidden md:flex items-center gap-1 ml-2" aria-label="Site">
+				<Show when={config.github?.releases}>
+					<Link
+						to="/changelog"
+						class="px-3 h-9 inline-flex items-center rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
+					>
+						Changelog
+					</Link>
+				</Show>
+				<Show when={config.github?.contributors}>
+					<Link
+						to="/community"
+						class="px-3 h-9 inline-flex items-center rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
+					>
+						Community
+					</Link>
+				</Show>
+				<Show when={config.plugins?.length}>
+					<Link
+						to="/plugins"
+						class="px-3 h-9 inline-flex items-center rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
+					>
+						Plugins
+					</Link>
+				</Show>
+			</nav>
 			<div class="flex-1" />
 			<Show when={config.features?.search !== false}>
 				<button
@@ -58,6 +86,8 @@ export function TopNav(props: { onMenuToggle: () => void }) {
 					<span class="i-mdi:github" aria-hidden="true" />
 				</a>
 			</Show>
+			<LocaleDropdown />
+			<VersionDropdown />
 			<ThemeToggle />
 		</header>
 	);

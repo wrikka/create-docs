@@ -352,3 +352,104 @@ html.dark .rt-markdown pre.shj {
 	background-color: var(--shiki-dark-bg) !important;
 	color: var(--shiki-dark) !important;
 }
+
+/* Playground (live code preview) */
+.rt-playground {
+	border: 1px solid var(--rt-border, #30363d);
+	border-radius: 10px;
+	overflow: hidden;
+	margin: 1.25rem 0;
+}
+
+.rt-playground__preview {
+	background: #fff;
+	min-height: 80px;
+}
+
+.rt-playground__frame {
+	display: block;
+	width: 100%;
+	min-height: 160px;
+	border: 0;
+	background: #fff;
+}
+
+.rt-playground__source {
+	border-top: 1px solid var(--rt-border, #30363d);
+}
+
+.rt-playground__source > summary {
+	cursor: pointer;
+	padding: 0.5rem 1rem;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--rt-muted, #8b949e);
+	user-select: none;
+}
+
+.rt-playground__source pre {
+	margin: 0;
+	border-radius: 0;
+}
+
+.rt-playground__source pre[contenteditable="true"] {
+	outline: none;
+}
+
+.rt-playground__source pre[contenteditable="true"]:focus {
+	box-shadow: inset 0 0 0 2px var(--rt-accent-2, #58a6ff);
+}
+
+/* Steps (interactive tutorial checklist) */
+.rt-steps {
+	list-style: none;
+	padding: 0;
+	margin: 1.25rem 0;
+	border-left: 2px solid var(--rt-border, #30363d);
+}
+
+.rt-steps__item {
+	position: relative;
+	display: flex;
+	gap: 0.75rem;
+	padding: 0.75rem 0 0.75rem 1.5rem;
+	align-items: flex-start;
+}
+
+.rt-steps__marker {
+	position: absolute;
+	left: -15px;
+	top: 0.6rem;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--rt-accent-2, #58a6ff);
+	color: #fff;
+	font-size: 13px;
+	font-weight: 700;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.rt-steps__check {
+	margin-top: 0.35rem;
+	flex-shrink: 0;
+	accent-color: var(--rt-accent-2, #58a6ff);
+	cursor: pointer;
+}
+
+.rt-steps__body {
+	flex: 1;
+	min-width: 0;
+}
+
+.rt-steps__item--done .rt-steps__body {
+	opacity: 0.55;
+}
+
+.rt-steps__item--done .rt-steps__marker {
+	background: var(--rt-success, #3fb950);
+}

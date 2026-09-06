@@ -26,10 +26,14 @@ export function ChangelogPage() {
 		},
 	);
 
-	const bodyHtml = (body: string | null) =>
-		body
-			? body.replace(/\r\n/g, "\n").replace(/\n/g, "<br />")
-			: "No release notes.";
+	const bodyHtml = (body: string | null) => {
+		if (!body) return "No release notes.";
+		const escaped = body
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;");
+		return escaped.replace(/\r\n/g, "\n").replace(/\n/g, "<br />");
+	};
 
 	return (
 		<div class="max-w-3xl mx-auto px-6 py-8">
