@@ -7,7 +7,7 @@ mountDocsApp({
 		title: "create-docs",
 		description:
 			"VitePress-style docs runtime with Scalar-like API references for SolidJS",
-		repoUrl: "https://github.com/wrikka/bun-packages",
+		repoUrl: "https://github.com/wrikka/create-docs",
 		logo: "i-mdi:book-open-page-variant",
 		social: {
 			npm: "https://www.npmjs.com/package/@wrikka/create-docs",
@@ -17,7 +17,7 @@ mountDocsApp({
 	},
 	github: {
 		owner: "wrikka",
-		repo: "bun-packages",
+		repo: "create-docs",
 		branch: "main",
 		stats: true,
 		releases: true,
@@ -34,7 +34,7 @@ mountDocsApp({
 				{ text: "Get started", link: "/docs", theme: "brand" },
 				{
 					text: "GitHub",
-					link: "https://github.com/wrikka/bun-packages",
+					link: "https://github.com/wrikka/create-docs",
 					theme: "alt",
 				},
 			],
@@ -85,7 +85,7 @@ mountDocsApp({
 			icon: "i-mdi:api",
 			version: "0.1.0",
 			install: "bun add @wrikka/create-docs-openapi",
-			url: "https://github.com/wrikka/bun-packages/tree/main/apps/web/create-docs",
+			url: "https://github.com/wrikka/create-docs",
 		},
 		{
 			name: "@wrikka/create-docs-orpc",
@@ -143,7 +143,7 @@ mountDocsApp({
 			label: "Wrikka Docs",
 			description: "The documentation site you are looking at right now.",
 			icon: "i-mdi:book-open-page-variant",
-			link: "https://github.com/wrikka/bun-packages",
+			link: "https://github.com/wrikka/create-docs",
 			tags: ["Docs", "SolidJS"],
 			badge: "Featured",
 		},

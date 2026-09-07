@@ -57,12 +57,12 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/newkub/create-docs"
+		"url": "https://github.com/wrikka/create-docs"
 	},
 	"bugs": {
-		"url": "https://github.com/newkub/create-docs/issues"
+		"url": "https://github.com/wrikka/create-docs/issues"
 	},
-	"homepage": "https://github.com/newkub/create-docs#readme",
+	"homepage": "https://github.com/wrikka/create-docs#readme",
 	"publishConfig": {
 		"access": "public"
 	},
