@@ -1,6 +1,13 @@
 import { Link } from "@tanstack/solid-router";
 import type { JSX } from "solid-js";
-import { createMemo, createSignal, For, Show } from "solid-js";
+import {
+	createEffect,
+	createMemo,
+	createSignal,
+	For,
+	onCleanup,
+	Show,
+} from "solid-js";
 import type { ShowcaseInfo } from "../config";
 import { useDocs } from "../context";
 
@@ -129,6 +136,15 @@ export function ShowcasePage() {
 	const [tag, setTag] = createSignal<string | null>(null);
 	const [detailItem, setDetailItem] = createSignal<ShowcaseInfo | null>(null);
 
+	createEffect(() => {
+		if (!detailItem()) return;
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape") setDetailItem(null);
+		};
+		document.addEventListener("keydown", onKey);
+		onCleanup(() => document.removeEventListener("keydown", onKey));
+	});
+
 	const allTags = createMemo(() => {
 		const set = new Set<string>();
 		for (const item of allItems()) {
@@ -244,6 +260,9 @@ export function ShowcasePage() {
 					<div
 						class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
 						onClick={() => setDetailItem(null)}
+						onKeyDown={(e) => {
+							if (e.key === "Escape") setDetailItem(null);
+						}}
 					>
 						<div
 							role="dialog"
@@ -251,6 +270,10 @@ export function ShowcasePage() {
 							aria-label={item().label}
 							class="w-full max-w-lg rounded-xl border border-border bg-surface shadow-2xl overflow-hidden"
 							onClick={(e) => e.stopPropagation()}
+							onKeyDown={(e) => {
+								if (e.key === "Escape") setDetailItem(null);
+								e.stopPropagation();
+							}}
 						>
 							<div class="relative h-40 bg-background border-b border-border flex items-center justify-center">
 								<Show

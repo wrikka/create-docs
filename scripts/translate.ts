@@ -57,7 +57,8 @@ function parseArgs(argv: string[]): CliArgs {
 		if (a === "--docs") args.docs = argv[++i] ?? args.docs;
 		else if (a === "--i18n") args.i18n = argv[++i] ?? "";
 		else if (a === "--apply") args.apply = true;
-		else if (a === "--limit") args.limit = Number(argv[++i] ?? "0") || args.limit;
+		else if (a === "--limit")
+			args.limit = Number(argv[++i] ?? "0") || args.limit;
 		else if (a === "--locales")
 			args.locales = (argv[++i] ?? "")
 				.split(",")
@@ -137,7 +138,9 @@ async function translateFile(
 		}),
 	});
 	if (!res.ok) {
-		throw new Error(`Provider ${res.status}: ${(await res.text()).slice(0, 300)}`);
+		throw new Error(
+			`Provider ${res.status}: ${(await res.text()).slice(0, 300)}`,
+		);
 	}
 	const json = (await res.json()) as {
 		choices?: { message?: { content?: string } }[];

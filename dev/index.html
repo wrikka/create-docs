@@ -14,10 +14,10 @@
       const el = document.getElementById('errors');
       function show(msg) {
         el.style.display = 'block';
-        el.textContent += msg + '\n';
+        el.textContent += `${msg}\n`;
       }
-      window.onerror = (m, s, l, c, e) => show('ERROR: ' + m + '\n' + (e && e.stack));
-      window.addEventListener('unhandledrejection', e => show('REJECTION: ' + e.reason + '\n' + (e.reason && e.reason.stack)));
+      window.onerror = (m, _s, _l, _c, e) => show(`ERROR: ${m}\n${e?.stack}`);
+      window.addEventListener('unhandledrejection', e => show(`REJECTION: ${e.reason}\n${e.reason?.stack}`));
     </script>
   </body>
 </html>
