@@ -11,7 +11,9 @@ export function GitHubStats() {
 		() => (enabled() ? github() : undefined),
 		async (cfg) => {
 			if (!cfg) return null;
-			return fetchRepoStats(cfg);
+			// Never let a GitHub API failure (rate limit, offline, missing
+			// token) crash the page — the badges below still render.
+			return fetchRepoStats(cfg).catch(() => null);
 		},
 	);
 
