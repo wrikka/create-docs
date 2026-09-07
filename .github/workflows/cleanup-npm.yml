@@ -27,24 +27,24 @@ jobs:
         id: list
         run: |
           echo "=== Personal packages (newkub) ==="
-          npm access ls-packages newkub --json || echo '{}'
+          npm access list packages newkub --json || echo '{}'
           echo "=== Org packages (wrikka) ==="
-          npm access ls-packages wrikka --json || echo '{}'
+          npm access list packages wrikka --json || echo '{}'
 
       - name: Dry run - packages to delete
         if: github.event.inputs.confirm != 'DELETE'
         run: |
           echo "Dry run: the packages below would be deleted if you run with confirm=DELETE"
           echo "(excluding @wrikka/create-docs)"
-          npm access ls-packages newkub --json | jq -r 'keys[]' | grep -v '^@wrikka/create-docs$' || true
-          npm access ls-packages wrikka --json | jq -r 'keys[]' | grep -v '^@wrikka/create-docs$' || true
+          npm access list packages newkub --json | jq -r 'keys[]' | grep -v '^@wrikka/create-docs$' || true
+          npm access list packages wrikka --json | jq -r 'keys[]' | grep -v '^@wrikka/create-docs$' || true
 
       - name: Delete packages
         if: github.event.inputs.confirm == 'DELETE'
         run: |
           set +e
-          npm access ls-packages newkub --json | jq -r 'keys[]' | grep -v '^@wrikka/create-docs$' > packages.txt
-          npm access ls-packages wrikka --json | jq -r 'keys[]' | grep -v '^@wrikka/create-docs$' >> packages.txt
+          npm access list packages newkub --json | jq -r 'keys[]' | grep -v '^@wrikka/create-docs$' > packages.txt
+          npm access list packages wrikka --json | jq -r 'keys[]' | grep -v '^@wrikka/create-docs$' >> packages.txt
           if [ ! -s packages.txt ]; then
             echo "No packages to delete."
             exit 0
