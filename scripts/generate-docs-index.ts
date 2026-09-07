@@ -99,9 +99,9 @@ for (const collection of collections) {
 	}
 }
 
-const outDir = process.argv.includes("--dev")
-	? join(root, "dev", "dist")
-	: join(root, "dist");
+const outDir = process.argv.includes("--lib")
+	? join(root, "dist")
+	: join(root, "dev", "dist");
 mkdirSync(outDir, { recursive: true });
 writeFileSync(
 	join(outDir, "search-index.json"),
