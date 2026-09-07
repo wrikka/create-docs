@@ -1,80 +1,79 @@
-﻿---
+---
 name: @wrikka/create-docs
 description: Vite plugin for documentation sites built on Functional Clean Architecture with SolidJS support
 related:
-  - follow-create-devin-skills
-  - follow-skills-map
-  - improve-codebase
-  - optimize-codebase
-  - ask-me
+  - set-secret-github
+  - ship-to-production
+  - watch-github-actions
+  - run-build
+  - run-typecheck
+  - follow-tool-bunup
+  - follow-framework-solidjs
+  - follow-service-cloudflare
+  - follow-tool-wrangler
+  - update-agents-md
 ---
 
 ## Goal
 
-Agent guidance for the `@wrikka/create-docs` workspace.
+Agent guidance for the standalone `@wrikka/create-docs` package.
 
 ## Scope
 
-This workspace lives in `apps/web/create-docs` within the monorepo.
+This is the upstream documentation framework repo at `https://github.com/wrikka/create-docs`.
+It is consumed by `wrikka/opensource-wrikka-com` and published to npm as `@wrikka/create-docs`.
 
 ## Execute
 
-Run the following scripts from `apps/web/create-docs`:
+Run the following scripts from the repo root:
 
 | Script | Command |
 |---|---|
 | `dev` | `bun run src/index.ts` |
-| `build` | `bunup` |
-| `build:watch` | `bunup --watch` |
-| `typecheck` | `tsgo --noEmit` |
-| `typecheck:watch` | `tsgo --noEmit --watch` |
-| `lint` | `biome check` |
-| `lint:fix` | `biome check --write` |
-| `format` | `biome check --write` |
-| `test` | `vitest run` |
-| `test:watch` | `vitest` |
-| `test:coverage` | `vitest run --coverage` |
-| `scan` | `ast-grep scan` |
-| `check` | `bun run lint && bun run typecheck && bun run scan` |
-| `verify` | `bun run check && bun run test && bun run build` |
+| `build` | `bun run build` |
+| `typecheck` | `bun run typecheck` |
+| `lint` | `bunx biome check` |
+| `lint:fix` | `bunx biome check --write` |
+| `format` | `bunx biome check --write` |
 | `pull:github` | `bun scripts/github-pull.ts --config <path>` |
-| `deps:analyze` | `bunx depcheck` |
+| `deploy` | `bunx wrangler deploy` |
+| `publish` | `npm publish` |
 | `clean` | `bunx rimraf dist node_modules` |
-| `security` | `bunx audit` |
-
-Moon tasks: `build, build-watch, check, clean, deps-analyze, dev, format, lint, lint-fix, scan, security, test, test-coverage, test-watch, typecheck, typecheck-watch, verify`
 
 ### Architecture
 
 | Tech | Skill |
 |---|---|
-| react | `tech: /follow-react` |
-| arktype | `tech: /follow-arktype` |
-| solidjs | `tech: /follow-solidjs` |
-| biome | `tech: /follow-biome` |
-| typescript | `tech: /follow-typescript` |
-| bunup | `tech: /follow-bunup` |
-| vite | `tech: /follow-vite` |
-| vitest | `tech: /follow-vitest` |
+| solidjs | `/follow-framework-solidjs` |
+| typescript | `/follow-lang-typescript` |
+| biome | `/follow-tool-biome` |
+| bunup | `/follow-tool-bunup` |
+| vite | `/follow-tool-vite` |
+| wrangler | `/follow-tool-wrangler` |
+| cloudflare | `/follow-service-cloudflare` |
+
+### Required GitHub Secrets
+
+- `CLOUDFLARE_API_TOKEN` — deploy Worker
+- `CLOUDFLARE_ACCOUNT_ID` — Cloudflare account
+- `NPM_TOKEN` — publish to npm
+- `GH_PAT` — trigger consumer rebuild
 
 ### Skills
 
-- follow-create-devin-skills
-- follow-skills-map
-- improve-codebase
-- optimize-codebase
-- ask-me
-
-### Workspaces
-
-- uses: `@wrikka/utils` (`packages/default-config`)
+- set-secret-github
+- ship-to-production
+- watch-github-actions
+- run-build
+- run-typecheck
+- follow-tool-bunup
 
 ## Rules
 
 - Keep under 250 lines.
 - Map tech stack with `tech: /follow-<skill>`.
-- Map workspace dependencies in `uses:`.
 - Do not duplicate root conventions.
+- Run `bun run typecheck` and `bun run build` before shipping.
 
 ## Expected Outcome
 
