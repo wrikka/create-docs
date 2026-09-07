@@ -4,8 +4,8 @@
 	"version": "0.1.0",
 	"type": "module",
 	"bin": {
-		"create-docs": "./bin/cli.js",
-		"create-docs-pull": "./scripts/github-pull.ts"
+		"create-docs": "bin/cli.js",
+		"create-docs-pull": "scripts/github-pull.ts"
 	},
 	"files": [
 		"bin",
@@ -57,7 +57,7 @@
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/wrikka/create-docs"
+		"url": "git+https://github.com/wrikka/create-docs.git"
 	},
 	"bugs": {
 		"url": "https://github.com/wrikka/create-docs/issues"
