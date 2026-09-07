@@ -1,21 +1,12 @@
-name: Publish to npm
+name: Publish @wrikka/create-docs
 
 on:
-  push:
-    tags:
-      - 'v*'
   workflow_dispatch:
-    inputs:
-      tag:
-        description: 'npm dist-tag (latest, beta, etc.)'
-        required: false
-        default: 'latest'
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    name: Publish to npm
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,7 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: bun install
@@ -40,4 +31,4 @@ jobs:
       - name: Publish to npm
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: npm publish --tag ${{ github.event.inputs.tag || 'latest' }} --access public
+        run: npm publish --access public
