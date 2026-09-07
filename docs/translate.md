@@ -32,15 +32,40 @@ page, and a per-page Translate action on doc pages.
 
 ## How it works
 
-1. `bunx create-docs-translate --docs docs --locales th,ja` scans your docs
+1. `bunx create-docs-translate --docs <dir> --locales th,ja` scans your docs
    and writes `translation-plan.json` with one task per
    `(document, locale)` pair.
-2. A CI workflow (e.g. `.github/workflows/translate.yml`) runs the planner
-   and — once a `TRANSLATE_PROVIDER` and API key are configured — feeds the
-   plan to the provider.
-3. Translated markdown lands under `docs/<locale>/…`, gets committed, and the
-   locale switcher picks it up automatically.
+2. Pass `--apply` to run the pending tasks through an OpenAI-compatible
+   chat-completions endpoint, and `--limit N` to cap each run (cost control).
+3. When docs are generated (e.g. pulled from GitHub and gitignored), pass
+   `--i18n <dir>` so translations are written to a tracked folder
+   (`<i18n>/<locale>/<file>`) that survives re-pulls — wire that folder into
+   your `createStaticDataSource` glob next to the pulled content.
+4. A CI workflow (e.g. `.github/workflows/translate.yml`) runs the script,
+   then commits the translated markdown back to the repo.
+
+```bash
+# plan only
+bunx create-docs-translate --docs docs --locales th --out plan.json
+
+# translate up to 20 files for one collection
+TRANSLATE_PROVIDER=openai TRANSLATE_API_KEY=sk-… \
+bunx create-docs-translate \
+  --docs docs/docs/bun-packages \
+  --i18n i18n/bun-packages \
+  --locales th --apply --limit 20
+```
+
+| Env var | Default | Purpose |
+| ------- | ------- | ------- |
+| `TRANSLATE_PROVIDER` | — | Enables `--apply` (e.g. `openai`) |
+| `TRANSLATE_API_KEY` | `OPENAI_API_KEY` | Provider API key |
+| `TRANSLATE_BASE_URL` | `https://api.openai.com/v1` | OpenAI-compatible endpoint |
+| `TRANSLATE_MODEL` | `gpt-4o-mini` | Chat model |
+| `TRANSLATE_CONCURRENCY` | `3` | Parallel requests |
+| `SOURCE_LOCALE` | `en` | Source language |
 
 The `/translate` page derives per-doc status from doc ids and tags: a doc
 counts as translated for a locale when its id contains `.{locale}` or
-`--{locale}`, or when it carries a `lang:{locale}` / `locale:{locale}` tag.
+`--{locale}` (e.g. `th--index`), or when it carries a `lang:{locale}` /
+`locale:{locale}` tag.
