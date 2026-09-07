@@ -12,6 +12,7 @@ import {
 	mkdirSync,
 	readdirSync,
 	readFileSync,
+	rmSync,
 	statSync,
 	writeFileSync,
 } from "node:fs";
@@ -271,6 +272,8 @@ export async function pullFromGitHub(
 			const collectionId = source.id;
 
 			const collectionOut = path.join(docsOut, collectionId);
+			// Clean previous output so deleted/excluded upstream files don't linger.
+			rmSync(collectionOut, { recursive: true, force: true });
 			mkdirSync(collectionOut, { recursive: true });
 
 			// Local mode: copy files from a local directory.
