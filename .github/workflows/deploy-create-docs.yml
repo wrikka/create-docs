@@ -51,3 +51,14 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: bunx wrangler deploy
+
+      - name: Trigger opensource-wrikka-com rebuild
+        if: steps.token.outputs.deploy_enabled == 'true'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          curl -f -X POST \
+            -H "Authorization: token $GH_PAT" \
+            -H "Accept: application/vnd.github+json" \
+            -d '{"event_type":"create-docs-updated"}' \
+            https://api.github.com/repos/wrikka/opensource-wrikka-com/dispatches
