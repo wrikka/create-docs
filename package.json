@@ -63,6 +63,9 @@
 		"url": "https://github.com/newkub/create-docs/issues"
 	},
 	"homepage": "https://github.com/newkub/create-docs#readme",
+	"publishConfig": {
+		"access": "public"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"dev:lib": "bun run src/index.ts",
