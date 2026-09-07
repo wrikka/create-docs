@@ -1,7 +1,7 @@
 {
 	"name": "@wrikka/create-docs",
 	"description": "Vite plugin for documentation sites built on Functional Clean Architecture with SolidJS support",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"type": "module",
 	"bin": {
 		"create-docs": "bin/cli.js",
