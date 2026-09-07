@@ -4,6 +4,8 @@
 
 Vite plugin for documentation sites built on Functional Clean Architecture with SolidJS support. Parse markdown and MDX, build navigation, generate search indexes, and render beautiful docs with live editing.
 
+Source: [github.com/newkub/create-docs](https://github.com/newkub/create-docs)
+
 ![Vite](https://img.shields.io/badge/Vite-8.2-646cff)
 ![SolidJS](https://img.shields.io/badge/SolidJS-1.9-1c6fbb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-7.0.2-3178c6)
