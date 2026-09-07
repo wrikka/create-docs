@@ -49,6 +49,10 @@ export interface DocsAppFeatures {
 	frontmatterToggle?: boolean;
 	/** Show an "MCP available" badge linking to the JSON-RPC endpoint. */
 	mcp?: boolean;
+	/** Enable the /search interactive search page and nav search box. */
+	searchPage?: boolean;
+	/** Enable the /translate page and per-doc translate actions (AI via CI). */
+	translate?: boolean;
 }
 
 export interface MarkdownConfig {
@@ -101,6 +105,20 @@ export interface PluginInfo {
 	version?: string;
 	/** Install command shown on the card, e.g. "bun add @wrikka/x". Omit for built-in integrations. */
 	install?: string;
+	/** Marketplace grouping, e.g. "Adapters", "AI", "Integrations". */
+	category?: string;
+	/** Availability badge: "built-in", "beta", "planned" or a version string. */
+	status?: string;
+}
+
+/** AI translation configuration shown on the /translate page. */
+export interface TranslateConfig {
+	/** Locales that AI translation targets (in addition to i18n.list). */
+	locales?: LocaleInfo[];
+	/** Translation provider hint shown to users, e.g. "openai", "devin". */
+	provider?: string;
+	/** CI workflow filename used to run translation, e.g. "translate.yml". */
+	workflow?: string;
 }
 
 export interface ShowcaseInfo {
@@ -114,8 +132,11 @@ export interface ShowcaseInfo {
 	image?: string;
 	/** Optional Iconify icon class used as fallback. */
 	icon?: string;
-	/** Optional link to the project/case. */
+	/** Optional link to the project/case. Internal paths ("/docs/x") route in-app. */
 	link?: string;
+	/** Internal doc target — renders a router link to /collection/docId. */
+	collection?: string;
+	docId?: string;
 	/** Optional tags. */
 	tags?: string[];
 	/** Optional badge. */
@@ -209,6 +230,8 @@ export interface DocsAppConfig {
 	versions?: VersionsConfig;
 	/** Multi-language docs: shows a language switcher and sets `<html lang>`. */
 	i18n?: I18nConfig;
+	/** AI translation UX — /translate page, per-doc translate menu, CI hints. */
+	translate?: TranslateConfig;
 	/** Optional analytics sink: page views are beaconed to this endpoint. */
 	analytics?: { endpoint?: string };
 	/** Plugin marketplace: entries listed on the `/plugins` page. */

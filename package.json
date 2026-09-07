@@ -1,11 +1,12 @@
 {
 	"name": "@wrikka/create-docs",
 	"description": "Vite plugin for documentation sites built on Functional Clean Architecture with SolidJS support",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"type": "module",
 	"bin": {
 		"create-docs": "bin/cli.js",
-		"create-docs-pull": "scripts/github-pull.ts"
+		"create-docs-pull": "scripts/github-pull.ts",
+		"create-docs-translate": "scripts/translate.ts"
 	},
 	"files": [
 		"bin",
@@ -86,7 +87,8 @@
 		"deps:analyze": "bunx depcheck",
 		"clean": "bunx rimraf dist node_modules",
 		"security": "bunx audit",
-		"pull": "bun scripts/github-pull.ts"
+		"pull": "bun scripts/github-pull.ts",
+		"translate": "bun scripts/translate.ts"
 	},
 	"dependencies": {
 		"@codemirror/basic-setup": "^0.20.0",

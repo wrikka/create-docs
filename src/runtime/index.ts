@@ -15,10 +15,12 @@ export { createDocsApp, mountDocsApp } from "./app";
 // Components (for custom pages/layouts)
 export { AccentPicker } from "./components/AccentPicker";
 export { ApiPlayground } from "./components/ApiPlayground";
+export { ApiReference } from "./components/ApiReference";
 export { AskAiDialog } from "./components/AskAiDialog";
 export { BackToTop } from "./components/BackToTop";
 export { Breadcrumbs } from "./components/Breadcrumbs";
 export { CollectionDropdown } from "./components/CollectionDropdown";
+export { ContextMenu, type ContextMenuItem } from "./components/ContextMenu";
 export { DocMarkdown } from "./components/DocMarkdown";
 export { DocPrevNext } from "./components/DocPrevNext";
 export { DocsDropdown } from "./components/DocsDropdown";
@@ -63,6 +65,7 @@ export type {
 	MarkdownConfig,
 	PluginInfo,
 	ShowcaseInfo,
+	TranslateConfig,
 	VersionsConfig,
 } from "./config";
 export type { DirMeta, StaticSourceOptions } from "./content";
@@ -114,7 +117,10 @@ export { HomePage } from "./pages/HomePage";
 export { IssuesPage } from "./pages/IssuesPage";
 export { OAuthCallbackPage } from "./pages/OAuthCallbackPage";
 export { PluginsPage } from "./pages/PluginsPage";
+export { SearchPage } from "./pages/SearchPage";
 export { ShowcasePage } from "./pages/ShowcasePage";
+export { TranslatePage } from "./pages/TranslatePage";
+export { officialPlugins } from "./plugins-catalog";
 export { setupPwa } from "./pwa";
 export { createDocsRouter } from "./router";
 export type { SeoInput } from "./seo";

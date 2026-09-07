@@ -2,7 +2,7 @@
 title: Markdown Syntax
 description: Callouts, code groups, steps, playgrounds, UI components, and more.
 order: 3
-category: Guide
+category: Features
 tags: [markdown]
 ---
 

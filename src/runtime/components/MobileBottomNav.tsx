@@ -1,11 +1,11 @@
-import { Link, useParams } from "@tanstack/solid-router";
+import { Link, useNavigate, useParams } from "@tanstack/solid-router";
 import { For } from "solid-js";
 import { createDocsList, useCollections } from "../data";
-import { setSearchOpen } from "./SearchPalette";
 
 export function MobileBottomNav(props: { onMenuToggle: () => void }) {
 	const collections = useCollections();
 	const params = useParams({ strict: false });
+	const navigate = useNavigate();
 
 	const [docsList] = createDocsList(() => "docs");
 	const [apiList] = createDocsList(() => "api");
@@ -91,7 +91,7 @@ export function MobileBottomNav(props: { onMenuToggle: () => void }) {
 					type="button"
 					aria-label="Search"
 					class="flex flex-col items-center justify-center h-full gap-0.5 text-xs text-muted hover:text-foreground transition-colors"
-					onClick={() => setSearchOpen(true)}
+					onClick={() => navigate({ to: "/search" })}
 				>
 					<span class="i-mdi:magnify text-xl" aria-hidden="true" />
 					<span class="scale-90">Search</span>

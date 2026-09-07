@@ -179,12 +179,31 @@ interface LocalFile {
 	absolute: string;
 }
 
+const EXCLUDED_DIRS = new Set([
+	"node_modules",
+	"dist",
+	"build",
+	"coverage",
+	".git",
+	".vitepress",
+	".next",
+	".turbo",
+	".cache",
+]);
+
+function isExcludedPath(relative: string): boolean {
+	return relative
+		.split("/")
+		.some((seg) => EXCLUDED_DIRS.has(seg) || seg.startsWith("."));
+}
+
 function scanLocalDir(dir: string, prefix = ""): LocalFile[] {
 	const items: LocalFile[] = [];
 	for (const name of readdirSync(dir)) {
 		const absolute = path.join(dir, name);
 		const relative = prefix ? `${prefix}/${name}` : name;
 		if (statSync(absolute).isDirectory()) {
+			if (EXCLUDED_DIRS.has(name) || name.startsWith(".")) continue;
 			items.push(...scanLocalDir(absolute, relative));
 		} else if (/\.(md|mdx)$/i.test(name) || /^_dir\.ya?ml$/i.test(name)) {
 			items.push({ relative, absolute });
@@ -277,6 +296,7 @@ export async function pullFromGitHub(
 					if (item.type !== "blob") continue;
 					const relative = relativeWithinDocs(item.path, docsDir);
 					if (relative === item.path && docsDir !== "") continue;
+					if (isExcludedPath(relative)) continue;
 					if (
 						/\.(md|mdx)$/i.test(relative) ||
 						/^_dir\.ya?ml$/i.test(path.basename(relative))

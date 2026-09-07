@@ -2,7 +2,7 @@
 title: Deployment
 description: Build, output, and deploy the docs site.
 order: 7
-category: Guide
+category: Reference
 tags: [deploy]
 ---
 

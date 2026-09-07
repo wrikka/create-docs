@@ -2,7 +2,7 @@
 title: Theming
 description: Customize colors, fonts, and UnoCSS shortcuts.
 order: 8
-category: Guide
+category: Features
 tags: [theme]
 ---
 

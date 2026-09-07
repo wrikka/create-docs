@@ -1,8 +1,10 @@
 import { Link, useParams } from "@tanstack/solid-router";
 import { createEffect, createMemo, createSignal, For, Show } from "solid-js";
+import { useDocs } from "../context";
 import { createDocsList, useCollections } from "../data";
 import { categoryIcon, typeIcon } from "../icons";
 import type { DocEntry } from "../types";
+import { ContextMenu, type ContextMenuItem } from "./ContextMenu";
 
 function sortDocs(items: DocEntry[]): DocEntry[] {
 	return [...items].sort(
@@ -21,10 +23,79 @@ function SidebarDocItem(props: {
 	const isActive = () => props.activeId === props.doc.id;
 	const hasChildren = () => (props.doc.children?.length ?? 0) > 0;
 	const [open, setOpen] = createSignal(true);
+	const [menu, setMenu] = createSignal<{ x: number; y: number } | null>(null);
+	const config = useDocs();
+	const collections = useCollections();
+
+	const href = () => `/${props.collection}/${props.doc.id}`;
+	const absoluteUrl = () => `${location.origin}${href()}`;
+	const repoUrl = () =>
+		collections()?.find((c) => c.id === props.collection)?.repoUrl ??
+		config.site.repoUrl;
+	const editUrl = () =>
+		repoUrl()
+			? `${repoUrl()}/edit/${config.github?.branch ?? "main"}/${props.doc.path || `${props.collection}/${props.doc.id}.md`}`
+			: "";
+
+	const copy = (text: string) => {
+		navigator.clipboard.writeText(text).catch(() => {});
+	};
+
+	const menuItems = (): ContextMenuItem[] => [
+		{
+			label: "Open",
+			icon: "i-mdi:file-document-outline",
+			action: () => {
+				location.href = href();
+			},
+		},
+		{
+			label: "Open in new tab",
+			icon: "i-mdi:open-in-new",
+			action: () => window.open(href(), "_blank", "noopener"),
+		},
+		{
+			label: "Copy link",
+			icon: "i-mdi:link-variant",
+			action: () => copy(absoluteUrl()),
+			divider: true,
+		},
+		{
+			label: "Copy path",
+			icon: "i-mdi:file-path",
+			action: () =>
+				copy(props.doc.path || `${props.collection}/${props.doc.id}.md`),
+		},
+		...(props.doc.description
+			? [
+					{
+						label: "Copy description",
+						icon: "i-mdi:text",
+						action: () => copy(props.doc.description ?? ""),
+					},
+				]
+			: []),
+		...(editUrl()
+			? [
+					{
+						label: "Edit on GitHub",
+						icon: "i-mdi:pencil-outline",
+						action: () => window.open(editUrl(), "_blank", "noopener"),
+						divider: true,
+					},
+				]
+			: []),
+	];
 
 	return (
 		<li>
-			<div class="flex items-center gap-0.5">
+			<div
+				class="group/item flex items-center gap-0.5"
+				onContextMenu={(e) => {
+					e.preventDefault();
+					setMenu({ x: e.clientX, y: e.clientY });
+				}}
+			>
 				<Show when={hasChildren()}>
 					<button
 						type="button"
@@ -65,7 +136,27 @@ function SidebarDocItem(props: {
 						</span>
 					</Show>
 				</Link>
+				<button
+					type="button"
+					aria-label={`More actions for ${props.doc.label}`}
+					title={props.doc.description || props.doc.label}
+					onClick={(e) => {
+						e.stopPropagation();
+						const rect = e.currentTarget.getBoundingClientRect();
+						setMenu({ x: rect.right, y: rect.bottom + 4 });
+					}}
+					class="w-6 h-6 shrink-0 inline-flex items-center justify-center rounded text-muted opacity-0 group-hover/item:opacity-100 focus-visible:opacity-100 hover:text-foreground hover:bg-surface transition-opacity cursor-pointer border-none bg-transparent"
+				>
+					<span class="i-mdi:dots-vertical" aria-hidden="true" />
+				</button>
 			</div>
+			<ContextMenu
+				open={menu() !== null}
+				x={menu()?.x ?? 0}
+				y={menu()?.y ?? 0}
+				items={menuItems()}
+				onClose={() => setMenu(null)}
+			/>
 			<Show when={hasChildren() && open()}>
 				<ul class="list-none m-0 p-0 ml-2.5 border-l border-border/60">
 					<For each={sortDocs(props.doc.children ?? [])}>
@@ -85,8 +176,18 @@ function SidebarDocItem(props: {
 	);
 }
 
+function formatGroupLabel(category: string): string {
+	if (!category || category === "Docs") return category || "Docs";
+	return category
+		.split(/[-_\s/]+/)
+		.filter(Boolean)
+		.map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+		.join(" ");
+}
+
 export function SidebarNav(props: { open: boolean; onNavigate: () => void }) {
 	const params = useParams({ strict: false });
+	const config = useDocs();
 	const [search, setSearch] = createSignal("");
 	const [docs] = createDocsList(() => params().collection);
 	const collections = useCollections();
@@ -108,7 +209,66 @@ export function SidebarNav(props: { open: boolean; onNavigate: () => void }) {
 	});
 
 	const sectionMeta = (category: string) =>
-		colMeta()?.sections?.find((s) => s.id === category || s.label === category);
+		colMeta()?.sections?.find(
+			(s) =>
+				s.id === category ||
+				s.label === category ||
+				s.label === formatGroupLabel(category),
+		);
+
+	const groupLabel = (category: string) =>
+		sectionMeta(category)?.label ?? formatGroupLabel(category);
+
+	const resourceLinks = () => {
+		const links: { label: string; to: string; icon: string }[] = [
+			{ label: "Search", to: "/search", icon: "i-mdi:magnify" },
+		];
+		if (config.showcase?.length)
+			links.push({
+				label: "Showcase",
+				to: "/showcase",
+				icon: "i-mdi:view-dashboard",
+			});
+		if (config.plugins?.length)
+			links.push({ label: "Plugins", to: "/plugins", icon: "i-mdi:puzzle" });
+		if (config.features?.translate || config.translate)
+			links.push({
+				label: "Translate",
+				to: "/translate",
+				icon: "i-mdi:translate",
+			});
+		if (config.features?.analytics)
+			links.push({
+				label: "Analytics",
+				to: "/analytics",
+				icon: "i-mdi:chart-box-outline",
+			});
+		if (config.github?.releases)
+			links.push({
+				label: "Changelog",
+				to: "/changelog",
+				icon: "i-mdi:history",
+			});
+		if (config.github?.contributors)
+			links.push({
+				label: "Community",
+				to: "/community",
+				icon: "i-mdi:account-group",
+			});
+		if (config.github?.issues)
+			links.push({
+				label: "Issues",
+				to: "/issues",
+				icon: "i-mdi:alert-circle-outline",
+			});
+		if (config.apiDiff)
+			links.push({
+				label: "API diff",
+				to: "/api-diff",
+				icon: "i-mdi:file-compare",
+			});
+		return links;
+	};
 
 	const isCollapsed = (category: string) => {
 		const stored = collapsed()[category];
@@ -206,7 +366,7 @@ export function SidebarNav(props: { open: boolean; onNavigate: () => void }) {
 										class={meta()?.icon ?? categoryIcon(category)}
 										aria-hidden="true"
 									/>
-									{meta()?.label ?? category}
+									{meta()?.label ?? groupLabel(category)}
 									<span class="ml-auto font-normal">{items.length}</span>
 									<span
 										class={`i-mdi:chevron-down text-xs transition-transform ${collapsedNow() ? "-rotate-90" : ""}`}
@@ -231,6 +391,33 @@ export function SidebarNav(props: { open: boolean; onNavigate: () => void }) {
 						);
 					}}
 				</For>
+				<Show when={resourceLinks().length > 0}>
+					<div class="mt-6 pt-3 border-t border-border">
+						<div class="flex items-center gap-2 px-2 pb-1 text-[11px] uppercase tracking-wider font-semibold text-muted">
+							<span class="i-mdi:apps" aria-hidden="true" />
+							Resources
+						</div>
+						<ul class="list-none m-0 p-0">
+							<For each={resourceLinks()}>
+								{(link) => (
+									<li>
+										<Link
+											to={link.to}
+											onClick={props.onNavigate}
+											class="flex items-center gap-2 px-2 py-1.5 rounded-md text-sm no-underline text-muted hover:text-foreground hover:bg-surface transition-colors"
+										>
+											<span
+												class={`${link.icon} shrink-0 opacity-70`}
+												aria-hidden="true"
+											/>
+											{link.label}
+										</Link>
+									</li>
+								)}
+							</For>
+						</ul>
+					</div>
+				</Show>
 			</nav>
 		</aside>
 	);

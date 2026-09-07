@@ -1,4 +1,4 @@
-import { mountDocsApp } from "@wrikka/create-docs/solid";
+import { mountDocsApp, officialPlugins } from "@wrikka/create-docs/solid";
 import "virtual:uno.css";
 import { dataSource } from "./data-source";
 
@@ -72,71 +72,24 @@ mountDocsApp({
 		pwa: false,
 		analytics: true,
 		frontmatterToggle: true,
+		searchPage: true,
+		translate: true,
+	},
+	translate: {
+		provider: "ai",
+		workflow: "translate.yml",
+		locales: [
+			{ id: "th", label: "ไทย" },
+			{ id: "ja", label: "日本語" },
+			{ id: "zh", label: "中文" },
+		],
 	},
 	topNav: [
 		{ label: "Docs", to: "/docs/index", icon: "i-mdi:book-open-page-variant" },
 		{ label: "API", to: "/api/index", icon: "i-mdi:api" },
 		{ label: "Showcase", to: "/showcase/index", icon: "i-mdi:view-dashboard" },
 	],
-	plugins: [
-		{
-			name: "@wrikka/create-docs-openapi",
-			description: "Render OpenAPI 3.x specs as interactive API references.",
-			icon: "i-mdi:api",
-			version: "0.1.0",
-			install: "bun add @wrikka/create-docs-openapi",
-			url: "https://github.com/wrikka/create-docs",
-		},
-		{
-			name: "@wrikka/create-docs-orpc",
-			description: "Generate API docs from oRPC router definitions.",
-			icon: "i-mdi:lan-connect",
-			version: "0.1.0",
-			install: "bun add @wrikka/create-docs-orpc",
-		},
-		{
-			name: "@wrikka/create-docs-elysia",
-			description: "Build API references from Elysia Eden treaties.",
-			icon: "i-mdi:server",
-			version: "0.1.0",
-			install: "bun add @wrikka/create-docs-elysia",
-		},
-		{
-			name: "@wrikka/create-docs-nitro",
-			description: "Document Nitro server handlers and event handlers.",
-			icon: "i-mdi:fire",
-			version: "0.1.0",
-			install: "bun add @wrikka/create-docs-nitro",
-		},
-		{
-			name: "@wrikka/create-docs-mcp",
-			description: "Expose docs as an MCP server for AI agents.",
-			icon: "i-mdi:robot",
-			version: "0.1.0",
-			install: "bun add @wrikka/create-docs-mcp",
-		},
-		{
-			name: "@wrikka/create-docs-search",
-			description: "Federated search across collections and versions.",
-			icon: "i-mdi:magnify",
-			version: "0.1.0",
-			install: "bun add @wrikka/create-docs-search",
-		},
-		{
-			name: "@wrikka/create-docs-analytics",
-			description: "Privacy-first analytics and search metrics.",
-			icon: "i-mdi:chart-line",
-			version: "0.1.0",
-			install: "bun add @wrikka/create-docs-analytics",
-		},
-		{
-			name: "@wrikka/create-docs-i18n",
-			description: "Locale-aware routing and content translation.",
-			icon: "i-mdi:translate",
-			version: "0.1.0",
-			install: "bun add @wrikka/create-docs-i18n",
-		},
-	],
+	plugins: officialPlugins,
 	showcase: [
 		{
 			id: "wrikka-docs",
@@ -155,6 +108,8 @@ mountDocsApp({
 			icon: "i-mdi:api",
 			tags: ["OpenAPI", "Playground"],
 			coverColor: "#7c3aed",
+			collection: "api",
+			docId: "index",
 		},
 		{
 			id: "cli-starter",
@@ -163,8 +118,16 @@ mountDocsApp({
 			icon: "i-mdi:console",
 			tags: ["CLI", "Bun"],
 			coverColor: "#0ea5e9",
+			link: "/docs/getting-started",
 		},
 	],
-	i18n: { current: "en", list: [{ id: "en", label: "English" }] },
+	i18n: {
+		current: "en",
+		list: [
+			{ id: "en", label: "English" },
+			{ id: "th", label: "ไทย" },
+			{ id: "ja", label: "日本語" },
+		],
+	},
 	theme: { defaultMode: "dark" },
 });

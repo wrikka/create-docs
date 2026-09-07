@@ -1,10 +1,13 @@
-import { Link, useParams } from "@tanstack/solid-router";
+import { Link, useNavigate, useParams } from "@tanstack/solid-router";
 import { createSignal, For, onMount, Show } from "solid-js";
 import type { SiteLink } from "../config";
 import { useDocs } from "../context";
+import { searchDocs } from "../data";
 import { setTheme, useTheme } from "../theme";
+import type { SearchResult } from "../types";
 import { AccentPicker } from "./AccentPicker";
 import { CollectionDropdown } from "./CollectionDropdown";
+import { ContextMenu } from "./ContextMenu";
 import { CustomizeDrawer } from "./CustomizeDrawer";
 import { DocsDropdown } from "./DocsDropdown";
 import { LocaleDropdown } from "./LocaleDropdown";
@@ -56,30 +59,13 @@ function LogoContextMenu(props: {
 	];
 
 	return (
-		<Show when={props.open}>
-			<div
-				class="fixed z-50 min-w-44 rounded-md border border-border bg-surface shadow-lg py-1"
-				style={{ left: `${props.x}px`, top: `${props.y}px` }}
-				role="menu"
-			>
-				<For each={items()}>
-					{(item) => (
-						<button
-							type="button"
-							role="menuitem"
-							class="w-full flex items-center gap-2 px-3 py-2 text-sm text-left text-foreground hover:bg-background transition-colors"
-							onClick={() => {
-								item.action();
-								props.onClose();
-							}}
-						>
-							<span class={item.icon} aria-hidden="true" />
-							{item.label}
-						</button>
-					)}
-				</For>
-			</div>
-		</Show>
+		<ContextMenu
+			open={props.open}
+			x={props.x}
+			y={props.y}
+			items={items()}
+			onClose={props.onClose}
+		/>
 	);
 }
 
@@ -94,6 +80,44 @@ export function TopNav(props: {
 	);
 	const [customizeOpen, setCustomizeOpen] = createSignal(false);
 	const [customNav, setCustomNav] = createSignal<SiteLink[] | null>(null);
+	const [navSearch, setNavSearch] = createSignal(false);
+	const [navQuery, setNavQuery] = createSignal("");
+	const [navResults, setNavResults] = createSignal<SearchResult[]>([]);
+	const navigate = useNavigate();
+	let navSearchEl: HTMLInputElement | undefined;
+
+	const openNavSearch = () => {
+		setNavSearch(true);
+		setNavQuery("");
+		setNavResults([]);
+		queueMicrotask(() => navSearchEl?.focus());
+	};
+
+	const closeNavSearch = () => {
+		setNavSearch(false);
+		setNavQuery("");
+		setNavResults([]);
+	};
+
+	const onNavSearchInput = async (value: string) => {
+		setNavQuery(value);
+		const term = value.trim();
+		if (term.length < 2) {
+			setNavResults([]);
+			return;
+		}
+		try {
+			setNavResults((await searchDocs(config, term)).slice(0, 8));
+		} catch {
+			setNavResults([]);
+		}
+	};
+
+	const goSearchPage = () => {
+		const q = navQuery().trim();
+		closeNavSearch();
+		navigate({ to: "/search", search: q ? { q } : {} });
+	};
 
 	onMount(() => {
 		try {
@@ -125,6 +149,9 @@ export function TopNav(props: {
 			: []),
 		...(config.showcase?.length
 			? [{ label: "Showcase", to: "/showcase", icon: "i-mdi:view-dashboard" }]
+			: []),
+		...(config.features?.translate || config.translate
+			? [{ label: "Translate", to: "/translate", icon: "i-mdi:translate" }]
 			: []),
 	];
 
@@ -169,38 +196,125 @@ export function TopNav(props: {
 				/>
 				<CollectionDropdown current={params().collection} />
 
-				<nav
-					class="hidden md:flex flex-1 items-center justify-center gap-1"
-					aria-label="Site"
-				>
-					<DocsDropdown />
-					<For each={allNav()}>
-						{(link) => (
+				<Show
+					when={navSearch()}
+					fallback={
+						<nav
+							class="hidden md:flex flex-1 items-center justify-center gap-1"
+							aria-label="Site"
+						>
+							<DocsDropdown />
+							<For each={allNav()}>
+								{(link) => (
+									<Link
+										to={link.to}
+										class="px-3 h-9 inline-flex items-center gap-1.5 rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
+									>
+										<Show when={link.icon}>
+											<span class={link.icon} aria-hidden="true" />
+										</Show>
+										{link.label}
+									</Link>
+								)}
+							</For>
 							<Link
-								to={link.to}
-								class="px-3 h-9 inline-flex items-center gap-1.5 rounded-md text-sm text-muted no-underline hover:text-foreground hover:bg-surface transition-colors"
+								to="/create"
+								class="ml-2 px-3 h-9 inline-flex items-center gap-1.5 rounded-md text-sm font-medium bg-primary text-primary-foreground no-underline hover:bg-primary-hover transition-colors"
 							>
-								<Show when={link.icon}>
-									<span class={link.icon} aria-hidden="true" />
-								</Show>
-								{link.label}
+								<span class="i-mdi:plus" aria-hidden="true" />
+								Create docs
 							</Link>
-						)}
-					</For>
-					<Link
-						to="/create"
-						class="ml-2 px-3 h-9 inline-flex items-center gap-1.5 rounded-md text-sm font-medium bg-primary text-primary-foreground no-underline hover:bg-primary-hover transition-colors"
-					>
-						<span class="i-mdi:plus" aria-hidden="true" />
-						Create docs
-					</Link>
-				</nav>
+						</nav>
+					}
+				>
+					<div class="hidden md:flex flex-1 items-center justify-center relative">
+						<div class="w-full max-w-xl flex items-center gap-2 px-3 h-10 rounded-lg border border-focus bg-surface shadow-sm">
+							<span
+								class="i-mdi:magnify text-muted shrink-0"
+								aria-hidden="true"
+							/>
+							<input
+								ref={navSearchEl}
+								type="search"
+								value={navQuery()}
+								onInput={(e) => onNavSearchInput(e.currentTarget.value)}
+								onKeyDown={(e) => {
+									if (e.key === "Escape") closeNavSearch();
+									if (e.key === "Enter") {
+										e.preventDefault();
+										const first = navResults()[0];
+										if (first && navQuery().trim()) {
+											closeNavSearch();
+											navigate({
+												to: "/$collection/$docId",
+												params: {
+													collection: first.collection,
+													docId: first.id,
+												},
+											});
+										} else {
+											goSearchPage();
+										}
+									}
+								}}
+								placeholder="Search docs… (Enter for full search)"
+								aria-label="Search documentation"
+								class="flex-1 bg-transparent outline-none border-none text-sm text-foreground placeholder:text-muted"
+							/>
+							<button
+								type="button"
+								onClick={closeNavSearch}
+								aria-label="Close search"
+								class="w-6 h-6 inline-flex items-center justify-center rounded text-muted hover:text-foreground cursor-pointer border-none bg-transparent"
+							>
+								<span class="i-mdi:close" aria-hidden="true" />
+							</button>
+						</div>
+						<Show when={navResults().length > 0}>
+							<div class="absolute top-full mt-2 w-full max-w-xl rounded-lg border border-border bg-surface shadow-xl py-1 z-50 max-h-80 overflow-y-auto">
+								<For each={navResults()}>
+									{(r) => (
+										<button
+											type="button"
+											class="w-full text-left px-3 py-2 hover:bg-background transition-colors cursor-pointer border-none bg-transparent"
+											onClick={() => {
+												closeNavSearch();
+												navigate({
+													to: "/$collection/$docId",
+													params: { collection: r.collection, docId: r.id },
+												});
+											}}
+										>
+											<div class="text-sm font-medium text-foreground truncate">
+												{r.title}
+											</div>
+											<div class="text-xs text-muted truncate">{r.snippet}</div>
+										</button>
+									)}
+								</For>
+								<button
+									type="button"
+									onClick={goSearchPage}
+									class="w-full text-left px-3 py-2 text-xs text-primary hover:bg-background transition-colors cursor-pointer border-t border-border border-none bg-transparent"
+								>
+									View all results →
+								</button>
+							</div>
+						</Show>
+					</div>
+				</Show>
 
 				<div class="flex items-center gap-1 shrink-0">
 					<Show when={config.features?.search !== false}>
 						<button
 							type="button"
-							onClick={() => setSearchOpen(true)}
+							onClick={() => {
+								if (config.features?.searchPage !== false) {
+									openNavSearch();
+								} else {
+									setSearchOpen(true);
+								}
+							}}
 							aria-label="Search documentation"
 							class="inline-flex items-center gap-2 px-3 h-9 rounded-md border border-border bg-surface text-sm text-muted hover:text-foreground hover:border-focus transition-colors cursor-pointer"
 						>

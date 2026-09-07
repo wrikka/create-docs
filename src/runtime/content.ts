@@ -259,21 +259,23 @@ export function createStaticDataSource(
 		async collections(): Promise<CollectionMeta[]> {
 			return options.collections.map((c) => {
 				const dirs = dirMeta.get(c.meta.id);
-				if (!dirs?.size) return c.meta;
-				const sections = [...dirs.entries()]
-					.map(([dirKey, m]) => ({
-						id: dirKey.split("/").pop() ?? dirKey,
-						label: m.title ?? dirKey.split("/").pop() ?? dirKey,
-						icon: m.icon,
-						order: m.order,
-						collapsed: m.collapsed,
-					}))
-					.sort(
-						(a, b) =>
-							(a.order ?? Number.MAX_SAFE_INTEGER) -
-							(b.order ?? Number.MAX_SAFE_INTEGER),
-					);
-				return { ...c.meta, sections };
+				const fromDirs = [...(dirs?.entries() ?? [])].map(([dirKey, m]) => ({
+					id: dirKey.split("/").pop() ?? dirKey,
+					label: m.title ?? dirKey.split("/").pop() ?? dirKey,
+					icon: m.icon,
+					order: m.order,
+					collapsed: m.collapsed,
+				}));
+				const dirIds = new Set(fromDirs.map((s) => s.id));
+				const fromMeta = (c.meta.sections ?? []).filter(
+					(s) => !dirIds.has(s.id) && !dirIds.has(s.label),
+				);
+				const sections = [...fromDirs, ...fromMeta].sort(
+					(a, b) =>
+						(a.order ?? Number.MAX_SAFE_INTEGER) -
+						(b.order ?? Number.MAX_SAFE_INTEGER),
+				);
+				return sections.length ? { ...c.meta, sections } : c.meta;
 			});
 		},
 

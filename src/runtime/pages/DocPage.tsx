@@ -1,4 +1,4 @@
-import { useParams } from "@tanstack/solid-router";
+import { Link, useParams } from "@tanstack/solid-router";
 import { dump as dumpYaml } from "js-yaml";
 import { createResource, createSignal, Show } from "solid-js";
 import { AskAiDialog } from "../components/AskAiDialog";
@@ -108,6 +108,15 @@ export function DocPage() {
 									<span class="i-mdi:robot-happy-outline" aria-hidden="true" />
 									Ask AI
 								</button>
+								<Show when={config.features?.translate || config.translate}>
+									<Link
+										to="/translate"
+										class="inline-flex items-center gap-1.5 px-2.5 h-8 rounded-md border border-border text-xs text-muted hover:text-foreground hover:bg-surface transition-colors no-underline"
+									>
+										<span class="i-mdi:translate" aria-hidden="true" />
+										Translate
+									</Link>
+								</Show>
 								<Show when={showFrontmatterToggle()}>
 									<button
 										type="button"

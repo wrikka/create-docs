@@ -2,7 +2,7 @@
 title: Data Sources
 description: Filesystem, remote, composite, and custom data sources.
 order: 6
-category: Guide
+category: Reference
 tags: [data]
 ---
 

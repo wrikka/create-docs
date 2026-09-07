@@ -1,26 +1,59 @@
+import { Link } from "@tanstack/solid-router";
 import type { JSX } from "solid-js";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import type { ShowcaseInfo } from "../config";
 import { useDocs } from "../context";
 
-function Card(props: { link?: string; children: JSX.Element }) {
+function Card(props: {
+	item: ShowcaseInfo;
+	onDetails?: () => void;
+	children: JSX.Element;
+}) {
 	const classes =
-		"group border border-border rounded-xl overflow-hidden bg-surface/30 hover:border-focus transition-all hover:-translate-y-0.5 hover:shadow-lg flex flex-col";
-	return props.link ? (
-		<a
-			href={props.link}
-			target="_blank"
-			rel="noreferrer"
-			class={`${classes} no-underline`}
+		"group border border-border rounded-xl overflow-hidden bg-surface/30 hover:border-focus transition-all hover:-translate-y-0.5 hover:shadow-lg flex flex-col text-left";
+	const { item } = props;
+	if (item.collection && item.docId) {
+		return (
+			<Link
+				to="/$collection/$docId"
+				params={{ collection: item.collection, docId: item.docId }}
+				class={`${classes} no-underline`}
+			>
+				{props.children}
+			</Link>
+		);
+	}
+	if (item.link?.startsWith("/")) {
+		return (
+			<Link to={item.link} class={`${classes} no-underline`}>
+				{props.children}
+			</Link>
+		);
+	}
+	if (item.link) {
+		return (
+			<a
+				href={item.link}
+				target="_blank"
+				rel="noreferrer"
+				class={`${classes} no-underline`}
+			>
+				{props.children}
+			</a>
+		);
+	}
+	return (
+		<button
+			type="button"
+			onClick={props.onDetails}
+			class={`${classes} cursor-pointer bg-transparent p-0 font-inherit`}
 		>
 			{props.children}
-		</a>
-	) : (
-		<div class={classes}>{props.children}</div>
+		</button>
 	);
 }
 
-function ShowcaseCard(props: { item: ShowcaseInfo }) {
+function ShowcaseCard(props: { item: ShowcaseInfo; onDetails?: () => void }) {
 	const { item } = props;
 	const coverStyle = () => {
 		if (item.image) return {};
@@ -31,7 +64,7 @@ function ShowcaseCard(props: { item: ShowcaseInfo }) {
 	};
 
 	return (
-		<Card link={item.link}>
+		<Card item={item} onDetails={props.onDetails}>
 			<div
 				class="relative h-44 w-full bg-background border-b border-border overflow-hidden"
 				style={coverStyle()}
@@ -94,6 +127,7 @@ export function ShowcasePage() {
 	const allItems = () => config.showcase ?? [];
 	const [search, setSearch] = createSignal("");
 	const [tag, setTag] = createSignal<string | null>(null);
+	const [detailItem, setDetailItem] = createSignal<ShowcaseInfo | null>(null);
 
 	const allTags = createMemo(() => {
 		const set = new Set<string>();
@@ -182,7 +216,10 @@ export function ShowcasePage() {
 				<section class="mb-10">
 					<h2 class="text-lg font-semibold mb-3 text-muted">Featured</h2>
 					<div class="sm:max-w-2xl">
-						<ShowcaseCard item={featured()!} />
+						<ShowcaseCard
+							item={featured()!}
+							onDetails={() => setDetailItem(featured()!)}
+						/>
 					</div>
 				</section>
 			</Show>
@@ -195,8 +232,99 @@ export function ShowcasePage() {
 			</Show>
 
 			<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-				<For each={rest()}>{(item) => <ShowcaseCard item={item} />}</For>
+				<For each={rest()}>
+					{(item) => (
+						<ShowcaseCard item={item} onDetails={() => setDetailItem(item)} />
+					)}
+				</For>
 			</div>
+
+			<Show when={detailItem()}>
+				{(item) => (
+					<div
+						class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm"
+						onClick={() => setDetailItem(null)}
+					>
+						<div
+							role="dialog"
+							aria-modal="true"
+							aria-label={item().label}
+							class="w-full max-w-lg rounded-xl border border-border bg-surface shadow-2xl overflow-hidden"
+							onClick={(e) => e.stopPropagation()}
+						>
+							<div class="relative h-40 bg-background border-b border-border flex items-center justify-center">
+								<Show
+									when={item().image}
+									fallback={
+										<span
+											class={`${item().icon ?? "i-mdi:view-dashboard"} text-7xl text-primary/60`}
+											aria-hidden="true"
+										/>
+									}
+								>
+									<img
+										src={item().image!}
+										alt={item().label}
+										class="w-full h-full object-cover"
+									/>
+								</Show>
+								<button
+									type="button"
+									onClick={() => setDetailItem(null)}
+									aria-label="Close"
+									class="absolute top-3 right-3 w-8 h-8 inline-flex items-center justify-center rounded-md bg-surface/80 border border-border text-muted hover:text-foreground transition-colors cursor-pointer"
+								>
+									<span class="i-mdi:close" aria-hidden="true" />
+								</button>
+							</div>
+							<div class="p-6">
+								<div class="flex items-center gap-2 mb-2">
+									<h3 class="text-xl font-semibold m-0">{item().label}</h3>
+									<Show when={item().badge}>
+										<span class="text-[10px] px-2 py-0.5 rounded-full bg-primary/15 text-primary font-medium">
+											{item().badge}
+										</span>
+									</Show>
+								</div>
+								<p class="text-sm text-muted leading-relaxed m-0">
+									{item().description}
+								</p>
+								<Show when={item().tags?.length}>
+									<div class="flex flex-wrap gap-1.5 mt-4">
+										<For each={item().tags}>
+											{(t) => (
+												<span class="text-[10px] px-2 py-0.5 rounded-full bg-background border border-border text-muted">
+													{t}
+												</span>
+											)}
+										</For>
+									</div>
+								</Show>
+								<div class="flex items-center gap-2 mt-6">
+									<Show when={item().link}>
+										<a
+											href={item().link}
+											target="_blank"
+											rel="noreferrer"
+											class="px-4 h-9 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground text-sm no-underline hover:bg-primary-hover transition-colors"
+										>
+											<span class="i-mdi:open-in-new" aria-hidden="true" />
+											Visit
+										</a>
+									</Show>
+									<button
+										type="button"
+										onClick={() => setDetailItem(null)}
+										class="px-4 h-9 inline-flex items-center rounded-md border border-border text-sm text-muted hover:text-foreground hover:bg-background transition-colors cursor-pointer"
+									>
+										Close
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				)}
+			</Show>
 		</div>
 	);
 }

@@ -2,7 +2,7 @@
 title: Features
 description: Search, SEO, API references, analytics, PWA, and more.
 order: 5
-category: Guide
+category: Features
 tags: [features]
 ---
 

@@ -2,7 +2,7 @@
 title: Configuration
 description: Site, features, i18n, versioning, and navigation config.
 order: 4
-category: Guide
+category: Reference
 tags: [config]
 ---
 

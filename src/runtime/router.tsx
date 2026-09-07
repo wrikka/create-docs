@@ -24,7 +24,9 @@ import { HomePage } from "./pages/HomePage";
 import { IssuesPage } from "./pages/IssuesPage";
 import { OAuthCallbackPage } from "./pages/OAuthCallbackPage";
 import { PluginsPage } from "./pages/PluginsPage";
+import { SearchPage } from "./pages/SearchPage";
 import { ShowcasePage } from "./pages/ShowcasePage";
+import { TranslatePage } from "./pages/TranslatePage";
 
 export function createDocsRouter(config: DocsAppConfig) {
 	const rootRoute = createRootRoute({
@@ -156,6 +158,27 @@ export function createDocsRouter(config: DocsAppConfig) {
 		component: ShowcasePage,
 	});
 	extraRoutes.push(showcaseRoute);
+
+	if (config.features?.search !== false) {
+		const searchRoute = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "search",
+			component: SearchPage,
+			validateSearch: (search: Record<string, unknown>) => ({
+				q: typeof search.q === "string" ? search.q : "",
+			}),
+		});
+		extraRoutes.push(searchRoute);
+	}
+
+	if (config.features?.translate || config.translate) {
+		const translateRoute = createRoute({
+			getParentRoute: () => rootRoute,
+			path: "translate",
+			component: TranslatePage,
+		});
+		extraRoutes.push(translateRoute);
+	}
 
 	const oauthCallbackRoute = createRoute({
 		getParentRoute: () => rootRoute,

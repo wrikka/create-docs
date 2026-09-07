@@ -93,23 +93,32 @@ export function PluginsPage() {
 		const list = plugins() ?? [];
 		const groups = new Map<string, typeof list>();
 		for (const p of list) {
-			const cat = p.name.startsWith("@")
-				? "Packages"
-				: p.name.includes("adapter")
-					? "Adapters"
-					: p.name.startsWith("MCP") ||
-							p.name.includes("LLM") ||
-							p.name.includes("OAuth") ||
-							p.name.includes("PWA") ||
-							p.name.includes("SEO") ||
-							p.name.includes("Search")
-						? "Integrations"
-						: "Core";
+			const cat =
+				p.category ??
+				(p.name.startsWith("@")
+					? "Packages"
+					: p.name.includes("adapter")
+						? "Adapters"
+						: p.name.startsWith("MCP") ||
+								p.name.includes("LLM") ||
+								p.name.includes("OAuth") ||
+								p.name.includes("PWA") ||
+								p.name.includes("SEO") ||
+								p.name.includes("Search")
+							? "Integrations"
+							: "Core");
 			const g = groups.get(cat) ?? [];
 			g.push(p);
 			groups.set(cat, g);
 		}
-		const order = ["Core", "Integrations", "Adapters", "Packages"];
+		const order = [
+			"Core",
+			"Adapters",
+			"AI",
+			"Integrations",
+			"Content",
+			"Packages",
+		];
 		return [...groups.entries()].sort(([a], [b]) => {
 			const ia = order.indexOf(a);
 			const ib = order.indexOf(b);
@@ -118,6 +127,15 @@ export function PluginsPage() {
 			if (ib !== -1) return 1;
 			return a.localeCompare(b);
 		});
+	};
+
+	const statusBadge = (status?: string) => {
+		if (!status || status === "built-in")
+			return "bg-success/10 text-success border-success/30";
+		if (status === "beta")
+			return "bg-warning/10 text-warning border-warning/30";
+		if (status === "planned") return "bg-surface text-muted border-border";
+		return "bg-primary/10 text-primary border-primary/30";
 	};
 
 	return (
@@ -203,6 +221,13 @@ export function PluginsPage() {
 													</span>
 												</Show>
 											</div>
+											<Show when={p.status}>
+												<span
+													class={`text-[10px] px-1.5 py-0.5 rounded border shrink-0 ${statusBadge(p.status)}`}
+												>
+													{p.status}
+												</span>
+											</Show>
 											<Show when={p.url}>
 												<a
 													href={p.url}

@@ -26,6 +26,26 @@ export const dataSource = createStaticDataSource({
 				label: "Docs",
 				icon: "i-mdi:book-open-page-variant",
 				description: "create-docs guide",
+				sections: [
+					{
+						id: "Guide",
+						label: "Guide",
+						icon: "i-mdi:compass-outline",
+						order: 0,
+					},
+					{
+						id: "Features",
+						label: "Features",
+						icon: "i-mdi:star-outline",
+						order: 1,
+					},
+					{
+						id: "Reference",
+						label: "Reference",
+						icon: "i-mdi:book-outline",
+						order: 2,
+					},
+				],
 			},
 			files: guideFiles,
 		},
